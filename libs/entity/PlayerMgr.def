@@ -1,0 +1,25 @@
+{
+	"Server":"bb_proxy",
+	"Type":"single",
+	"Remotes":{
+		"proxyLogin":{
+			"req":{
+				"proxyId":"uint",
+				"frontendId":"string",
+				"isNewbie":"utiny",
+				"opts":"udo"
+			},
+			"resp":{
+				"player":"mailbox",
+				"clientInfo":"udo"
+			}
+		},
+		"proxyLogout":{
+			"req":{
+				"proxyId":"uint",
+				"reason":"string",
+				"immediately":"utiny"
+			}
+		}
+	}
+}

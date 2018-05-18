@@ -1,0 +1,15 @@
+{
+	"Server":"bf_proxy",
+	"Type":"single",
+	"Remotes":{
+		"kickProxy":{
+			"req":{
+				"proxyId":"uint",
+				"reason":"string"				
+			},
+			"resp":{
+				"result":"uint"
+			}
+		}
+	}
+}
