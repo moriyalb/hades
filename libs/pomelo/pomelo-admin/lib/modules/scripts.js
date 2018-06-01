@@ -101,7 +101,7 @@ var get = function(scriptModule, agent, msg, cb) {
     }
     fs.readFile(path.join(scriptModule.app.base,"Project/Scripts", filename), 'utf-8', function(err, data) {
         if (err) {
-            logger.error('fail to read script file:' + filename + ', ' + err.stack);
+            Logger.error('fail to read script file:' + filename + ', ' + err.stack);
             cb('fail to read script with name:' +filename);
         }
 
@@ -117,7 +117,7 @@ var save = function(scriptModule, agent, msg, cb) {
 
     fs.writeFile(filepath, msg.body, function(err) {
         if (err) {
-            logger.error('fail to write script file:' + msg.filename + ', ' + err.stack);
+            Logger.error('fail to write script file:' + msg.filename + ', ' + err.stack);
             cb('fail to write script file:' + msg.filename);
             return;
         }
@@ -132,7 +132,7 @@ var save = function(scriptModule, agent, msg, cb) {
 var run = function(scriptModule, agent, msg, cb) {
     agent.request(msg.serverId, module.exports.moduleId, msg, function(err, res) {
         if (err) {
-            logger.error('fail to run script for ' + err.stack);
+            Logger.error('fail to run script for ' + err.stack);
             return;
         }
         cb(null, res);

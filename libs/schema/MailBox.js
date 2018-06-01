@@ -12,7 +12,7 @@ const produce = require("immer").default
  */
 const RemoteMailboxWrapper = {
 	get(target, key, receiver) {
-		let ename = Reflect.get(target, "entityName")		
+		let ename = target.entityName
 		let remotes = Hades.Schema.getMetaEntity(ename).remotes
 		if (remotes.has(key)){
 			let sid = Reflect.get(target, "backendID")
@@ -24,7 +24,11 @@ const RemoteMailboxWrapper = {
 				
 				let args = _handleArg(argObj, ename, key)
 				let rpc = Hades.App.rpc(Hades.Config.backendServer(), ename, key)
-				return await rpc(sid, Reflect.get(target, "entityID"), args)
+				if (ename == Hades.Config.clientProxy()){
+					return await rpc(sid, Reflect.get(target, "entityID"), args)
+				}else{
+					return await rpc(sid, args)
+				}				
 			}
 		}
 		return Reflect.get(target, key, receiver)
@@ -39,10 +43,17 @@ const RemoteMailboxWrapper = {
 const ClientMailboxWrapper = {
 	get(target, key, receiver) {
 		let pushes = Hades.Schema.getPushMethods(Hades.Config.clientProxy())
+		//console.log("ClientMailboxWrapper ===== ", key)
 		if (pushes.has(key)){
 			//console.log("ClientMailboxWrapper ->", key)
 			let frontId = Reflect.get(target, "frontendID")
 			let entityId = Reflect.get(target, "entityID")
+
+			if (!frontId){
+				console.error("ClientMailboxWrapper ", frontId, entityId)
+				return null
+			}
+						
 			return async (argObj) => {				
 				let pushId = Hades.Schema.Methods.push[key].id
 				let msg = Hades.Message.handlePush(pushId, argObj, entityId)
@@ -55,20 +66,6 @@ const ClientMailboxWrapper = {
 			}
 		}
 		return Reflect.get(target, key, receiver)
-	}
-}
-
-class ProxyMB{
-	constructor(value){
-		this._isMailbox = true
-		this.entityName = value.entityName
-		this.entityID = value.entityID
-		this.backendID = value.backendID
-		this.frontendID = value.frontendID
-	}
-
-	[Symbol.toStringTag](){
-		return `ProxyMB(${this.entityID})`
 	}
 }
 
@@ -98,6 +95,15 @@ class MailBox {
 			}
 		}
 		return mb
+	}
+
+	createDynamic(ename, eid, backendID, frontendID = null){
+		return this._unwrap({
+			"entityName" : ename,
+			"entityID" : eid,
+			"backendID" : backendID,
+			"frontendID" : frontendID
+		})
 	}
 	
 	createClient(frontId, entityId){
@@ -169,13 +175,16 @@ class MailBox {
 
 	_unwrap(value){
 		if (value.backendID == Hades.Config.getServerId()){
-			let entity = Hades.SysLocal.PlayerMgr.getPlayer(value.entityID)
-			if (!!entity){
-				return entity
-			}
+			if (value.entityName == Hades.Config.clientProxy()){
+				return Hades.SysLocal.PlayerMgr.getPlayer(value.entityID)
+			}else{
+				return Hades.Local[value.entityName]
+			}			
 		}
-		let mb = new Proxy(value, RemoteMailboxWrapper)
-		mb.client = this.createClient(value.frontendID, value.entityID)
+		let mb = new Proxy({...value, _isMailbox:true}, RemoteMailboxWrapper)
+		if (value.entityName == Hades.Config.clientProxy()){
+			mb.client = this.createClient(value.frontendID, value.entityID)
+		}
 		return mb
 	}	
 }

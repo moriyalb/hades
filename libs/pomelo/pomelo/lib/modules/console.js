@@ -84,7 +84,7 @@ Module.prototype.monitorHandler = function (agent, msg, cb) {
 			});
 			break;
 		default:
-			logger.error('receive error signal: %j', msg);
+			Logger.error('receive error signal: %j', msg);
 			break;
 	}
 };
@@ -244,7 +244,7 @@ var restart = function (app, agent, msg, cb) {
 				setTimeout(function () {
 					runServer(app, msg, function (err, status) {
 						if (!!err) {
-							logger.error('restart ' + id + ' failed.');
+							Logger.error('restart ' + id + ' failed.');
 						} else {
 							successIds.push(id);
 							successFlag = true;

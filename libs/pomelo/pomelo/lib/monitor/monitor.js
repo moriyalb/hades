@@ -52,7 +52,7 @@ Monitor.prototype.startConsole = function (cb) {
 
 	this.monitorConsole.on('error', function (err) {
 		if (!!err) {
-			logger.error('monitorConsole encounters with error: %j', err.stack);
+			Logger.error('monitorConsole encounters with error: %j', err.stack);
 			return;
 		}
 	});
@@ -79,7 +79,7 @@ Monitor.prototype.reconnect = function (masterInfo) {
 			env: self.app.get(Constants.RESERVED.ENV)
 		});
 		self.startConsole(function () {
-			logger.info(`restart modules for server : ${self.app.serverId} finish.`);
+			Logger.info(`restart modules for server : ${self.app.serverId} finish.`);
 		});
 	});
 };

@@ -1,3 +1,5 @@
+"use strict"
+
 /**
  * Loader Module
  */
@@ -11,11 +13,6 @@ const isFile = function(path) {
 
 const isDir = function(path) {
 	return fs.statSync(path).isDirectory()
-}
-
-const requireUncached = function(module){
-    delete require.cache[require.resolve(module)]
-    return require(module)
 }
 
 class HadesLoader {
@@ -54,12 +51,31 @@ class HadesLoader {
 	}
 
 	loadFile(f, app){
-		let m = requireUncached(f)
+		let m = this.reload(f)
 		if(typeof m === 'function') {
 			m = m(app)
 		}
 		return m
 	}	
+
+	/**
+	 * safe require method
+	 * @param {*} path 
+	 */
+	reload(p, root){
+		try{
+			if (!!root){
+				p = path.resolve(root, p)
+			}else{
+				p = require.resolve(p)
+			}
+			delete require.cache[p]
+			return require(p)
+		}catch(err){
+			console.error("Hades.LoaderUtil reload error -> ", err)
+			return null
+		}
+	}
 }
 
 module.exports = new HadesLoader()

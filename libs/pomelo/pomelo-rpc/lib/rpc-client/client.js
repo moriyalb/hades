@@ -253,8 +253,8 @@ var generateProxy = function (client, record, context, app) {
 	var res, name;
 	if (record.namespace == "user") {
 		modules = record.path;
-		res = {};
-		for (name in modules) {
+		res = {};		
+		for (name in modules) {			
 			res[name] = Proxy.createUser({
 				service: name,
 				methods: modules[name],

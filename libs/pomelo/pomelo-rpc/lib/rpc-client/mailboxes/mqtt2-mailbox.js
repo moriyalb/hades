@@ -49,7 +49,7 @@ MailBox.prototype.connect = function(tracer, cb) {
   this.socket = MqttCon(stream);
 
   var connectTimeout = setTimeout(function() {
-    logger.error('rpc client %s connect to remote server %s timeout', self.serverId, self.id);
+    Logger.error('rpc client %s connect to remote server %s timeout', self.serverId, self.id);
     self.emit('close', self.id);
   }, CONNECT_TIMEOUT);
 
@@ -80,12 +80,12 @@ MailBox.prototype.connect = function(tracer, cb) {
       pkg = Coder.decodeClient(pkg.payload);
       processMsg(self, pkg);
     } catch (err) {
-      logger.error('rpc client %s process remote server %s message with error: %s', self.serverId, self.id, err.stack);
+      Logger.error('rpc client %s process remote server %s message with error: %s', self.serverId, self.id, err.stack);
     }
   });
 
   this.socket.on('error', function(err) {
-    logger.error('rpc socket %s is error, remote server %s host: %s, port: %s', self.serverId, self.id, self.host, self.port);
+    Logger.error('rpc socket %s is error, remote server %s host: %s, port: %s', self.serverId, self.id, self.host, self.port);
     self.emit('close', self.id);
     self.close();
   });
@@ -95,7 +95,7 @@ MailBox.prototype.connect = function(tracer, cb) {
   });
 
   this.socket.on('disconnect', function(reason) {
-    logger.error('rpc socket %s is disconnect from remote server %s, reason: %s', self.serverId, self.id, reason);
+    Logger.error('rpc socket %s is disconnect from remote server %s, reason: %s', self.serverId, self.id, reason);
     var reqs = self.requests;
     for (var id in reqs) {
       var ReqCb = reqs[id];
@@ -191,7 +191,7 @@ MailBox.prototype.checkKeepAlive = function() {
   if (this.lastPing > 0) {
     if (this.lastPong < this.lastPing) {
       if (now - this.lastPing > KEEP_ALIVE_TIMEOUT) {
-        logger.error('mqtt rpc client %s checkKeepAlive timeout from remote server %s for %d lastPing: %s lastPong: %s', this.serverId, this.id, KEEP_ALIVE_TIMEOUT, this.lastPing, this.lastPong);
+        Logger.error('mqtt rpc client %s checkKeepAlive timeout from remote server %s for %d lastPing: %s lastPong: %s', this.serverId, this.id, KEEP_ALIVE_TIMEOUT, this.lastPing, this.lastPong);
         this.emit('close', this.id);
         this.lastPing = -1;
         // this.close();
@@ -260,13 +260,13 @@ var processMsg = function(mailbox, pkg) {
 var setCbTimeout = function(mailbox, id, tracer, cb) {
   // console.log('setCbTimeout %d', id);
   var timer = setTimeout(function() {
-    // logger.warn('rpc request is timeout, id: %s, host: %s, port: %s', id, mailbox.host, mailbox.port);
+    // Logger.warn('rpc request is timeout, id: %s, host: %s, port: %s', id, mailbox.host, mailbox.port);
     clearCbTimeout(mailbox, id);
     if (mailbox.requests[id]) {
       delete mailbox.requests[id];
     }
     var eMsg = util.format('rpc %s callback timeout %d, remote server %s host: %s, port: %s', mailbox.serverId, mailbox.timeoutValue, id, mailbox.host, mailbox.port);
-    logger.error(eMsg);
+    Logger.error(eMsg);
     cb(tracer, new Error(eMsg));
   }, mailbox.timeoutValue);
   mailbox.timeout[id] = timer;
@@ -275,7 +275,7 @@ var setCbTimeout = function(mailbox, id, tracer, cb) {
 var clearCbTimeout = function(mailbox, id) {
   // console.log('clearCbTimeout %d', id);
   if (!mailbox.timeout[id]) {
-    logger.warn('timer is not exsits, serverId: %s remote: %s, host: %s, port: %s', mailbox.serverId, id, mailbox.host, mailbox.port);
+    Logger.warn('timer is not exsits, serverId: %s remote: %s, host: %s, port: %s', mailbox.serverId, id, mailbox.host, mailbox.port);
     return;
   }
   clearTimeout(mailbox.timeout[id]);

@@ -1,4 +1,3 @@
-const pomelo = require('../../pomelo')
 const Hades = GlobalHades
 const Protocol = Hades.Protocol
 const Package = Protocol.Package
@@ -71,7 +70,7 @@ Command.prototype.handle = function(socket, msg) {
         return
     }
 
-	let resp = [HS_CODE_OK, _.now(), this.heartbeatSec, this.userHandshake.datumMd5]
+	let resp = [HS_CODE_OK, Hades.TimeUtil.msnow(), this.heartbeatSec, this.userHandshake.datumMd5]
 
     if (data.edmd5 != ProtocolMD5){
         processError(socket, HS_CODE_UNMATCH_MD5)
@@ -88,7 +87,7 @@ Command.prototype.handle = function(socket, msg) {
             processError(socket, HS_CODE_INVALID_RSA)
             return
         }
-        pomelo.app.components.__connector__.setPubKey(socket.id, data.rsa)
+        Hades.App.app.components.__connector__.setPubKey(socket.id, data.rsa)
     }
     
     process.nextTick(() => {
@@ -98,7 +97,7 @@ Command.prototype.handle = function(socket, msg) {
 
 
 Command.prototype.handleAck = function(socket) {
-	let resp = [HS_CODE_OK, _.now()]
+	let resp = [HS_CODE_OK, Hades.TimeUtil.msnow()]
 	this.robots.handshakeAck += 1
     process.nextTick(() => {
         responseAck.bind(this)(socket, resp)

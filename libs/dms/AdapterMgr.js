@@ -1,91 +1,43 @@
-"use strict";
+"use strict"
+const _ = require("lodash")
+const Hades = GlobalHades
 
-const _ = require("lodash");
-const MySqlAdapter = require('./knexjs/knex');
-const RedisAdapter = require('./redis/ioredis');
+const AdapterMysql = require('./AdapterMysql')
+const AdapterRedis = require('./AdapterRedis')
 
-class AdapterMgr {
-    constructor() {
+class AdapterMgr{
+    constructor(){
+        this.adapterCfg = {
+            cache: 'redis',
+            db: 'mysql'
+        }
+
+        this.handleAdapter = {
+            'redis': AdapterRedis,
+            'mysql': AdapterMysql
+        }
     }
 
     init(){
-        MySqlAdapter.init()
-        RedisAdapter.init()
+        AdapterMysql.init()
+        AdapterRedis.init()
     }
 
-    /**
-     * 
-     * @param {*} loadKey 
-     */
-    async loadDataRedis(loadKey) {
-        return await RedisAdapter.executeGetHashDatas(loadKey);
+    async updateDB(table, datas){
+        await this.handleAdapter[this.adapterCfg.db].update(table, datas)
     }
 
-    async setCacheData(chgData){
-        return await RedisAdapter.executeDelAndSetDatas(chgData.delete, chgData.set);
+    async deleteDB(table, datas){
+        await this.handleAdapter[this.adapterCfg.db].delete(table, datas)
     }
 
-    /**
-     * 
-     * @param {*} deleteQuery 
-     */
-    async deleteDataRedis(deleteQuery) {
-        return await RedisAdapter.executeDelHashDatas(deleteQuery);
+    updateCache(data){
+        this.handleAdapter[this.adapterCfg.cache].update(data)
     }
 
-    /**
-     * load data from mysql.
-     * @param {*} tableName 
-     * @param {*} where 
-     */
-    async loadDataSql(tableName, where) {
-        return await MySqlAdapter.select(tableName, where);
-    }
-
-    /**
-     * insert data to mysql. if exists to update.
-     * @param {*} deleteQuery 
-     * @param {*} updateQuery 
-     * 
-     * @returns {String} FAIL, OK
-     */
-    async deleteAndUpdateDataSql(deleteQuery, updateQuery) {
-        return await MySqlAdapter.deleteAndUpdateData(deleteQuery, updateQuery);
-    }
-
-    /**
-     * 
-     * @param {*} updateQuery 
-     * 
-     * @returns {String} FAIL, OK
-     */
-    async updateDataSql(updateQuery) {
-        return await MySqlAdapter.updateDataUseTransaction(updateQuery);
-    }
-
-    /**
-     * delete data from mysql.
-     * @param {*} deleteQuery 
-     * 
-     * @returns {String} FAIL, OK
-     */
-    async deleteDataSql(deleteQuery) {
-        return await MySqlAdapter.deleteDataUseTransaction(deleteQuery);
-    }
-
-    /**
-     * find entity id from base table in MySQL.
-     * @param {*} tableName 
-     * @param {*} columnName 
-     * @param {*} whereObject 
-     */
-    async findEntityIDSql(tableName, columnName, whereObject) {
-        return await MySqlAdapter.selectColumn(tableName, columnName, whereObject);
-    }
-
-    async rawQeury(query){
-        return await MySqlAdapter.raw(query)
+    deleteCache(data){
+        this.handleAdapter[this.adapterCfg.cache].delete(data)
     }
 }
 
-module.exports = new AdapterMgr();
+module.exports = new AdapterMgr()

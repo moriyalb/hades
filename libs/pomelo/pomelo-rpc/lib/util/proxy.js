@@ -14,12 +14,12 @@ var exp = module.exports;
  */
 exp.create = function (opts) {
 	if (!opts || !opts.origin) {
-		logger.warn('opts and opts.origin should not be empty.');
+		Logger.warn('opts and opts.origin should not be empty.');
 		return null;
 	}
 
 	if (!opts.proxyCB || typeof opts.proxyCB !== 'function') {
-		logger.warn('opts.proxyCB is not a function, return the origin module directly.');
+		Logger.warn('opts.proxyCB is not a function, return the origin module directly.');
 		return opts.origin;
 	}
 

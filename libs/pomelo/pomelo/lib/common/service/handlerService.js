@@ -55,7 +55,7 @@ Service.prototype.handle = function (msg, session, cb) {
 		return
 	}
 
-	console.log("Check Proxy ", methodName, proxy)
+	//console.log("Check Proxy ", methodName, proxy)
 	
 	proxy[methodName].apply(proxy, args)
 		.then(response => {

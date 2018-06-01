@@ -251,6 +251,8 @@ def readEnum(cfg, k, v):
 			isBit = True
 		enumCfg = {
 			"ctype" : "enum",
+			"bit" : isBit,
+			"max" : 0,
 			"fields" :{}
 		}
 	if 'index' in v:
@@ -261,6 +263,7 @@ def readEnum(cfg, k, v):
 		enumCfg['fields'][f] = offset
 		enumCfg['fields'][offset] = f
 		if isBit:
+			enumCfg['max'] += offset
 			offset <<= 1
 		else:
 			offset += 1

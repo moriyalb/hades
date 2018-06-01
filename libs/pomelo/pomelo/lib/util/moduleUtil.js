@@ -13,7 +13,7 @@ var pro = module.exports;
  */
 pro.loadModules = function (self, consoleService) {
 	// load app register modules
-	var _modules = self.app.get(Constants.KEYWORDS.MODULE);
+	var _modules = Hades.App.app.get(Constants.KEYWORDS.MODULE);
 
 	if (!_modules) {
 		return;
@@ -36,7 +36,7 @@ pro.loadModules = function (self, consoleService) {
 		moduleId = record.moduleId || module.moduleId;
 
 		if (!moduleId) {
-			logger.warn('ignore an unknown module.');
+			Logger.warn('ignore an unknown module.');
 			continue;
 		}
 

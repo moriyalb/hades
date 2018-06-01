@@ -1,3 +1,4 @@
+const util = require("util")
 const path = require("path")
 const _ = require("lodash")
 const R = require("ramda")
@@ -18,7 +19,9 @@ Hades.ProfanityUtil = require("./libs/utils/ProfanityUtil")
 Hades.RandomUtil = require("./libs/utils/RandomUtil")
 Hades.ScheduleUtil = require("./libs/utils/ScheduleUtil")
 Hades.TimeUtil = require("./libs/utils/TimeUtil")
+Hades.TimerUtil = require("./libs/utils/TimerUtil") //TODO Deprecated!!
 Hades.LoaderUtil = require("./libs/utils/LoaderUtil")
+Hades.FuncUtil = require("./libs/utils/FuncUtil")
 
 //Core
 Hades.Const = require("./libs/core/HadesConst")
@@ -66,6 +69,7 @@ Hades.init = function(opts){
 	Hades._initCore()
 	Hades._initPomelo()
 	Hades._initApp(opts)
+	Hades._initShotcut()
 }
 
 Hades._initCore = function(){
@@ -82,11 +86,9 @@ Hades._initCore = function(){
 	Hades.CommunicateMgr = require("./libs/manager/CommunicateMgr")
 	Hades.CommunicateMgr.init()
 
-	Hades.Hook = require("./libs/manager/HookMgr")
-	Hades.Hook.init()
+	Hades.Datum = require("./libs/core/HadesDatum")
 
-	//Lifecycle
-	Hades.Lifecycle = require("./libs/lifecycle/Lifecycle.js")
+	Hades.Lifecycle = require("./libs/manager/LifecycleMgr.js")
 }
 
 Hades._initPomelo = function(){
@@ -104,4 +106,23 @@ Hades._initApp = function(opts){
 	Hades.Message = require("./libs/core/HadesMessage")
 	Hades.Message.init()
 }
+
+Hades._initShotcut = function(){
+	Hades.createSimpleEntity = Hades.Schema.Entity.createSimple
+	Hades.loadSimpleEntity = Hades.Schema.Entity.createSimpleFromDB
+	Hades.saveSimpleEntity =  Hades.Schema.Entity.saveSimple
+	Hades.isProxyEntity = Hades.Schema.Entity.isProxyEntity
+	Hades.isSimpleEntity = Hades.Schema.Entity.isSimpleEntity
+	Hades.isSingleEntity = Hades.Schema.Entity.isSingleEntity
+}
+
+const _global_values = new Map()
+Hades.set = function(name, value){
+	_global_values.set(name, value)
+}
+
+Hades.get = function(name){
+	return _global_values.get(name)
+}
+
 

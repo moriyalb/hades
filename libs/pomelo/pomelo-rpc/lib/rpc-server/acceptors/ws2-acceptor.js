@@ -94,11 +94,11 @@ var ipFilter = function(obj) {
     var self = this;
     self.whitelist(function(err, tmpList) {
       if (err) {
-        logger.error('%j.(RPC whitelist).', err);
+        Logger.error('%j.(RPC whitelist).', err);
         return;
       }
       if (!Array.isArray(tmpList)) {
-        logger.error('%j is not an array.(RPC whitelist).', tmpList);
+        Logger.error('%j is not an array.(RPC whitelist).', tmpList);
         return;
       }
       if (!!obj && !!obj.ip && !!obj.id) {
@@ -111,7 +111,7 @@ var ipFilter = function(obj) {
         var sock = self.sockets[obj.id];
         if (sock) {
           sock.close();
-          logger.warn('%s is rejected(RPC whitelist).', obj.ip);
+          Logger.warn('%s is rejected(RPC whitelist).', obj.ip);
         }
       }
     });

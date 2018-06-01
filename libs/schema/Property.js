@@ -12,28 +12,43 @@ const Property = module.exports
 function ArraySetter(info, target, key, value, receiver) {	
 	//console.log("ArraySetter called ", key, value)
 	let arrkey = parseInt(key)
+	let oldValue = Reflect.get(target, key)
+	
 	if (_.isSafeInteger(arrkey)){
-		key = arrkey
-		let type = Types.getCompositeTypeById(info.typeId)
-		let subId = Types.getTypeId(type.type)
+		key = arrkey		
 		value = Property._value(value, this,  {
-			typeId : subId,
-			path : [...info.path, key],
-			isArray : true
-		})
+			parentType : info.type,
+			type : Types.getCompositeType(info.type.type),
+			typePath: [...info.typePath, info.type.ctype],
+			valuePath : [...info.valuePath, key]
+		}, oldValue)
 		if (_.isNil(value)){
 			return true //don't really set this value but we can not return false
 		}
 	}else if (key == "length"){
-		Reflect.get(target, key), value
+		if (Reflect.get(target, key) > value){
+			Hades.Event.emit(Hades.Event.ON_DELETE_PROPERTY, this, info)			
+			for (let i = 0; i < value; ++i){
+				Hades.Event.emit(Hades.Event.ON_UPDATE_PROPERTY, this, {
+					typePath: [...info.typePath, info.type.ctype],
+					valuePath : [...info.valuePath, i]
+				}, target[i])
+			}
+		}
 	}
 	return Reflect.set(target, key, value, receiver)
 }
 
 const MapWrapper = {
 	get(target, key, rev){
-		if (key == "set" || key == "get"){
+		if (key == "get" || key == "set" || key == "delete" || key == "clear"){
 			return rev[`_${key}`].bind(this, target)
+		}else if(key == "asPlainObject"){			
+			let out = {}
+			for (let [k,v] of target){
+				out[k] = v
+			}
+			return R.always(out)
 		}else if(typeof(target[key]) == 'function'){
 			return target[key].bind(target)
 		}
@@ -44,10 +59,9 @@ const MapWrapper = {
 }
 
 function parseMapKey(key, info){
-	let type = Types.getCompositeTypeById(info.typeId)
-	let kt = Types.getCompositeType(type.keyType)
-	let vt = Types.getCompositeType(type.valueType)
-	console.log("parseMapKey -> ", key, typeof key, info, type, kt, vt)
+	let kt = Types.getCompositeType(info.type.keyType)
+	let vt = Types.getCompositeType(info.type.valueType)
+	//console.log("parseMapKey -> ", key, typeof key, info, type, kt, vt)
 	if (Types.isIntegerKey(kt.type)){
 		key = parseInt(key)
 		if (!_.isSafeInteger(key)){
@@ -61,29 +75,25 @@ function parseMapKey(key, info){
 function wrapMap(entity, info, value){
 	const GetWrapper = {
 		apply(target, thisBinding, args){
-			console.log("GetWrapper get ", args)
-
 			let [prop, key] = args
-			let key = parseMapKey(key, info)			
+			key = parseMapKey(key, info)			
 			return target.call(prop, key)
 		}
 	}
 	
 	const SetWrapper = {
 		apply(target, thisBinding, args){
-			console.log("SetWrapper set", args)
-
 			let [prop, key, value] = args
 			key = parseMapKey(key, info)		
 
-			let type = Types.getCompositeTypeById(info.typeId)
-			let vt = Types.getCompositeType(type.valueType)
+			let vt = Types.getCompositeType(info.type.valueType)
 			
-			console.log("SetWrapper 2 -> ", type, vt, subId)
-			value = Property._value(value, this,  {
-				typeId : vt.id,
-				path : [...info.path, key]
-			})
+			value = Property._value(value, entity,  {
+				parentType : info.type,
+				type : vt,
+				typePath: [...info.typePath, info.type.ctype],
+				valuePath : [...info.valuePath, key]
+			}, prop.get(key))
 			if (_.isNil(value)){
 				return true //don't really set this value but we can not return false
 			}
@@ -91,21 +101,62 @@ function wrapMap(entity, info, value){
 		}
 	}
 
+	const DeleteWrapper = {
+		apply(target, thisBinding, args){
+			let [prop, key] = args
+			key = parseMapKey(key, info)	
+			Hades.Event.emit(Hades.Event.ON_DELETE_PROPERTY, entity, {
+				typePath: [...info.typePath, info.type.ctype],
+				valuePath : [...info.valuePath, key]
+			})	
+			return target.call(prop, key)
+		}
+	}
+
+	const ClearWrapper = {
+		apply(target, thisBinding, args){
+			let [prop] = args
+			//console.log("ClearWrapper -> ", prop.size)
+			if (prop.size > 0){
+				Hades.Event.emit(Hades.Event.ON_DELETE_PROPERTY, entity, {
+					typePath: info.typePath,
+					valuePath : info.valuePath
+				})	
+			// }else{
+			// 	console.log("Clear Nothing ->")
+			}
+			
+			return target.call(prop)
+		}
+	}
+
 	let wrapper = new Proxy(value, MapWrapper)
 	wrapper._get = new Proxy(value.get, GetWrapper)
 	wrapper._set = new Proxy(value.set, SetWrapper)
+	wrapper._delete = new Proxy(value.delete, DeleteWrapper)
+	wrapper._clear = new Proxy(value.clear, ClearWrapper)
 	wrapper[Symbol.toPrimitive] = function(hint){
 		//console.log("toPrimitive sssssssss ", hint)
-		return `Map {${_.toArray(this.entries())}}`
+		let out = []
+		for (let [k, v] of this.entries()){
+			out.push(`${JSON.stringify(k)}:${JSON.stringify(v)}`)
+		}
+		return `Map {${out.join(",")}}`
 	}
 	wrapper[util.inspect.custom] = function(hint){
 		//console.log("util.inspect.custom sssssssss ")
-		return `Map {${_.toArray(this.entries())}}`
+		let out = []
+		for (let [k, v] of this.entries()){
+			out.push(`${JSON.stringify(k)}:${JSON.stringify(v)}`)
+		}
+		return `Map {${out.join(",")}}`
 	}
 	const attr = { enumerable : false }
 	Object.defineProperties(wrapper, {
 		"_get" : attr,
 		"_set" : attr,
+		"_delete" : attr,
+		"_clear" : attr,
 		[Symbol.toPrimitive] : attr,
 		[util.inspect.custom] : attr
 	})
@@ -114,14 +165,14 @@ function wrapMap(entity, info, value){
 }
 
 function ObjectGetter(info, target, key, receiver) {	
-	let type = Types.getCompositeTypeById(info.typeId)
 	let value = Reflect.get(target, key, receiver)
-	if (key in type.fields && _.isNil(value)){
-		let subId = Types.getTypeId(type.fields[key])
-		console.log("ObjectGetter -> ", key , subId, Types.getDefaultValue(subId))
+	if (key in info.type.fields && _.isNil(value)){
+		let subId = Types.getTypeId(info.type.fields[key])
 		value = Property._value(Types.getDefaultValue(subId), this,  {
-			typeId : subId,
-			path : [...info.path, key]
+			parentType : info.type,
+			type: Types.getCompositeTypeById(subId),
+			typePath: [...info.typePath, info.type.ctype],
+			valuePath : [...info.valuePath, key]
 		})
 		target[key] = value
 	}
@@ -130,16 +181,19 @@ function ObjectGetter(info, target, key, receiver) {
 
 function ObjectSetter(info, target, key, value, receiver) {	
 	let type = Types.getCompositeTypeById(info.typeId)
-	if (value == Reflect.get(target, key, receiver)){
+	let oldValue = Reflect.get(target, key, receiver)
+	if (value == oldValue){
 		return true
 	}
 	
-	if (key in type.fields){
-		let subId = Types.getTypeId(type.fields[key])
+	if (key in info.type.fields){
+		let subId = Types.getTypeId(info.type.fields[key])	
 		value = Property._value(value, this,  {
-			typeId : subId,
-			path : [...info.path, key]
-		})
+			parentType : info.type,
+			type: Types.getCompositeTypeById(subId),
+			typePath: [...info.typePath, info.type.ctype],
+			valuePath : [...info.valuePath, key]
+		}, oldValue)
 		if (_.isNil(value)){
 			return true //don't really set this value but we can not return false
 		}
@@ -161,8 +215,10 @@ function PropertyGetter(target, key, receiver) {
 			dv = Types.getDefaultValue(tid)
 		}
 		value = Property._value(dv, this,  {
-			typeId : props[key].type,
-			path : [key]
+			parentType : null,			
+			type : Types.getCompositeTypeById(props[key].type),
+			typePath: ["object"],
+			valuePath : [key]
 		})
 		target[key] = value
 	}
@@ -171,15 +227,18 @@ function PropertyGetter(target, key, receiver) {
 
 function PropertySetter(target, key, value, receiver) {
 	let props = Hades.Schema.getMetaProperty(this._ename)
-	if (value == Reflect.get(target, key, receiver)){
+	let oldValue = Reflect.get(target, key, receiver)
+	if (value == oldValue){
 		return true
 	}
 
 	if (Reflect.has(props, key)){
 		value = Property._value(value, this, {
-			typeId : props[key].type,
-			path : [key]
-		})
+			parentType : null,			
+			type : Types.getCompositeTypeById(props[key].type),
+			typePath: ["object"],
+			valuePath : [key]
+		}, oldValue)
 		if (_.isNil(value)){
 			return true //don't really set this value but we can not return false
 		}
@@ -189,6 +248,7 @@ function PropertySetter(target, key, value, receiver) {
 
 function PropertyChecker(target, name) {
 	let props = Hades.Schema.getMetaProperty(this._ename)
+	//console.log("Check Props -> ", props)
 	return Reflect.has(props, name)
 }
 
@@ -200,43 +260,58 @@ Property.root = (entity) => {
 	})
 }
 
-Property._value = (value, entity, info) => {	
+Property._value = (value, entity, info, oldValue) => {	
 	if (Hades.Config.isDebugging()){
-		//console.log("Property _value checking2 -> ", value, info.typeId)
-		if (!Types.assertType(info.typeId, value)){
+		//console.log("Property _value checking2 -> ", value, info)
+		if (!Types.assertType(info.type.id, value)){
 			console.error("Invalid Entity Property Value -> ", info, value, entity._ename)
 			return
 		}
 	}
-	let type = Types.getCompositeTypeById(info.typeId)
+	
 	let prop
-	switch(type.ctype){
-		case 'basic':
+	switch(info.type.ctype){
+		case 'basic':		
 			prop = value
+			Hades.Event.emit(Hades.Event.ON_UPDATE_PROPERTY, entity, info, prop)
 		break
 
 		case 'enum':
 			prop = typeof(value) == "string" ? type.fields[value] : value
+			Hades.Event.emit(Hades.Event.ON_UPDATE_PROPERTY, entity, info, prop)
 		break
 
 		case 'array':
 			prop = new Proxy([], {
 				set : _.bind(ArraySetter, entity, info)
 			})
+			if (!_.isNil(oldValue) && oldValue.length > 0){
+				Hades.Event.emit(Hades.Event.ON_DELETE_PROPERTY, entity, info)
+			}			
 			for (let v of value){
 				prop.push(v)
-			}
-			//console.log("_value case array -> ", info)
-			if (Hades.Config.isWholeArrayNeeded()){
-				Hades.Event.emit(Hades.Event.ON_UPDATE_PROPERTY, entity._ename, info.path, prop)
-				return prop
-			}
+			}		
 		break
 
 		case 'map':
 			prop = wrapMap(entity, info, new Map())
-			for (let v in value){
-				prop[v] = value[v]
+			let oldKeys = _.isNil(oldValue) ? new Set([]) : new Set(oldValue.keys())
+			if (util.types.isMap(value)){
+				for (let [k, v] of value){
+					prop.set(k, v)
+					oldKeys.delete(k)
+				}				
+			}else{
+				for (let k in value){
+					prop.set(k, value[k])
+					oldKeys.delete(k)
+				}	
+			}
+			for (let ok of oldKeys){
+				Hades.Event.emit(Hades.Event.ON_DELETE_PROPERTY, entity, {
+					typePath : [...info.typePath, info.type.ctype],
+					valuePath : [...info.valuePath, ok]
+				})
 			}
 		break
 
@@ -245,10 +320,10 @@ Property._value = (value, entity, info) => {
 				get : _.bind(ObjectGetter, entity, info),
 				set : _.bind(ObjectSetter, entity, info)
 			})
-			for (let f in type.fields){
-				let ft = type.fields[f]
+			for (let f in info.type.fields){
+				let ft = info.type.fields[f]
 				let subTypeInfo = Types.getCompositeType(ft)
-				console.log("check obj -> ", prop[f], value[f],  Types.getDefaultValue(subTypeInfo.id))
+				//console.log("check obj -> ", prop[f], value[f],  Types.getDefaultValue(subTypeInfo.id))
 				prop[f] = !_.isNil(value[f]) ? value[f] : Types.getDefaultValue(subTypeInfo.id)
 				delete value[f]		
 			}
@@ -256,12 +331,6 @@ Property._value = (value, entity, info) => {
 				prop[f] = value[f]
 			}
 		break
-	}
-
-	if (Hades.Config.isWholeArrayNeeded() && info.isArray){
-
-	}else{
-		Hades.Event.emit(Hades.Event.ON_UPDATE_PROPERTY, entity._ename, info.path, prop)
 	}
 	
 	return prop

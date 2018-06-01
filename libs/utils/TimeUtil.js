@@ -1,4 +1,5 @@
 "use strict"
+
 /**
  * @author: bwf 2014-10-27
  */
@@ -33,6 +34,10 @@ tt.getDateByTS = function (ns) {
 
 tt.nowDate = function () {
     return new Date()
+}
+
+tt.msnow = function () {
+    return tt.nowDate().getTime()
 }
 
 tt.fnow = function () {

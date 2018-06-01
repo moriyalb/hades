@@ -21,7 +21,7 @@ Filter.prototype.before = function(msg, session, next) {
     session.__serialTask__ = task;
     next();
   }, function() {
-    logger.error('[serial filter] msg timeout, msg:' + JSON.stringify(msg));
+    Logger.error('[serial filter] msg timeout, msg:' + JSON.stringify(msg));
   }, this.timeout);
 };
 

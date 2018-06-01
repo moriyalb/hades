@@ -24,7 +24,7 @@ var Module = function (opts, consoleService) {
 // ----------------- bind methods -------------------------
 
 var onServerAdd = function (module, record) {
-	//logger.debug('masterwatcher receive add server event, with server: %j', record);
+	//Logger.debug('masterwatcher receive add server event, with server: %j', record);
 	if (!record || record.type === 'client' || !record.serverType) {
 		return;
 	}
@@ -32,18 +32,18 @@ var onServerAdd = function (module, record) {
 };
 
 var onServerReconnect = function (module, record) {
-	//logger.debug('masterwatcher receive reconnect server event, with server: %j', record);
+	//Logger.debug('masterwatcher receive reconnect server event, with server: %j', record);
 	if (!record || record.type === 'client' || !record.serverType) {
-		logger.warn('onServerReconnect receive wrong message: %j', record);
+		Logger.warn('onServerReconnect receive wrong message: %j', record);
 		return;
 	}
 	module.watchdog.reconnectServer(record);
 };
 
 var onServerLeave = function (module, id, type) {
-	//logger.debug('masterwatcher receive remove server event, with server: %s, type: %s', id, type);
+	//Logger.debug('masterwatcher receive remove server event, with server: %s, type: %s', id, type);
 	if (!id) {
-		logger.warn('onServerLeave receive server id is empty.');
+		Logger.warn('onServerLeave receive server id is empty.');
 		return;
 	}
 	if (type !== 'client') {
@@ -59,12 +59,12 @@ Module.prototype.start = function (cb) {
 
 Module.prototype.masterHandler = function (agent, msg, cb) {
 	if (!msg) {
-		logger.warn('masterwatcher receive empty message.');
+		Logger.warn('masterwatcher receive empty message.');
 		return;
 	}
 	var func = masterMethods[msg.action];
 	if (!func) {
-		logger.warn(`masterwatcher unknown action: ${msg.action}`);
+		Logger.warn(`masterwatcher unknown action: ${msg.action}`);
 		return;
 	}
 	func(this, agent, msg, cb);

@@ -192,7 +192,7 @@ var setCbTimeout = function(mailbox, id, tracer, cb) {
     if (!!mailbox.requests[id]) {
       delete mailbox.requests[id];
     }
-    logger.error('rpc callback timeout, remote server host: %s, port: %s', mailbox.host, mailbox.port);
+    Logger.error('rpc callback timeout, remote server host: %s, port: %s', mailbox.host, mailbox.port);
     utils.invokeCallback(cb, tracer, new Error('rpc callback timeout'));
   }, mailbox.timeoutValue);
   mailbox.timeout[id] = timer;

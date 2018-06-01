@@ -2,7 +2,8 @@
  * Filter for statistics.
  * Record used time for each request.
  */
-var conLogger = PomeloLogger.getLogger('pomelo', __filename);
+const Hades = GlobalHades
+var conLogger = Hades.Logger.getLogger('pomelo', __filename);
 var utils = require('../../util/utils');
 
 module.exports = function() {

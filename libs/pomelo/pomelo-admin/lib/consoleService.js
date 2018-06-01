@@ -3,7 +3,7 @@ const Logger = Hades.Logger.getLogger('pomelo', __filename);
 var MonitorAgent = require('./monitor/monitorAgent');
 var EventEmitter = require('events');
 var MasterAgent = require('./master/masterAgent');
-var schedule = Hades.Scheduler
+
 var protocol = require('./util/protocol');
 var utils = require('./util/utils');
 var util = require('util');
@@ -81,7 +81,7 @@ ConsoleService.prototype.start = function(cb) {
 			});
 		});
 	} else {
-		//logger.info(`try to connect master: ${this.type}, ${this.host}, ${this.port}`)
+		//Logger.info(`try to connect master: ${this.type}, ${this.host}, ${this.port}`)
 		this.agent.connect(this.port, this.host, cb);
 		exportEvent(this, this.agent, 'close');
 	}
@@ -164,20 +164,20 @@ ConsoleService.prototype.execute = function(moduleId, method, msg, cb) {
 	var self = this;
 	var m = this.modules[moduleId];
 	if (!m) {
-		logger.error('unknown module: %j.', moduleId);
+		Logger.error('unknown module: %j.', moduleId);
 		cb('unknown moduleId:' + moduleId);
 		return;
 	}
 
 	if (!m.enable) {
-		logger.error('module %j is disable.', moduleId);
+		Logger.error('module %j is disable.', moduleId);
 		cb('module ' + moduleId + ' is disable');
 		return;
 	}
 
 	var module = m.module;
 	if (!module || typeof module[method] !== 'function') {
-		logger.error('module %j dose not have a method called %j.', moduleId, method);
+		Logger.error('module %j dose not have a method called %j.', moduleId, method);
 		cb('module ' + moduleId + ' dose not have a method called ' + method);
 		return;
 	}
@@ -298,7 +298,7 @@ var registerRecord = function(service, moduleId, module) {
  */
 var addToSchedule = function(service, record) {
 	if (record && record.schedule) {
-		record.jobId = schedule.scheduleJob({
+		record.jobId = Hades.ScheduleUtil.Schedule.scheduleJob({
 				start: Date.now() + record.delay,
 				period: record.interval
 			},
@@ -324,11 +324,11 @@ var doScheduleJob = function(args) {
 
 	if (service.master) {
 		record.module.masterHandler(service.agent, null, function(err) {
-			logger.error('interval push should not have a callback.');
+			Logger.error('interval push should not have a callback.');
 		});
 	} else {
 		record.module.monitorHandler(service.agent, null, function(err) {
-			logger.error('interval push should not have a callback.');
+			Logger.error('interval push should not have a callback.');
 		});
 	}
 };
@@ -374,7 +374,7 @@ var listCommand = function(consoleService, moduleId, msg, cb) {
  */
 var enableCommand = function(consoleService, moduleId, msg, cb) {
 	if (!moduleId) {
-		logger.error('fail to enable admin module for ' + moduleId);
+		Logger.error('fail to enable admin module for ' + moduleId);
 		cb('empty moduleId');
 		return;
 	}
@@ -400,7 +400,7 @@ var enableCommand = function(consoleService, moduleId, msg, cb) {
  */
 var disableCommand = function(consoleService, moduleId, msg, cb) {
 	if (!moduleId) {
-		logger.error('fail to enable admin module for ' + moduleId);
+		Logger.error('fail to enable admin module for ' + moduleId);
 		cb('empty moduleId');
 		return;
 	}

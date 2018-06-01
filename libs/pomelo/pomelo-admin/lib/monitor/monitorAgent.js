@@ -49,7 +49,7 @@ Util.inherits(MonitorAgent, EventEmitter);
  */
 MonitorAgent.prototype.connect = function(port, host, cb) {
   if (this.state > ST_INITED) {
-    logger.error('monitor client has connected or closed.');
+    Logger.error('monitor client has connected or closed.');
     return;
   }
 
@@ -70,7 +70,7 @@ MonitorAgent.prototype.connect = function(port, host, cb) {
       cb();
     } else {
       self.emit('close');
-      logger.error('server %j %j register master failed', self.id, self.type);
+      Logger.error('server %j %j register master failed', self.id, self.type);
     }
   });
 
@@ -92,7 +92,7 @@ MonitorAgent.prototype.connect = function(port, host, cb) {
         // a response from monitor
         var respCb = self.callbacks[respId];
         if (!respCb) {
-          logger.warn('unknown resp id:' + respId);
+          Logger.warn('unknown resp id:' + respId);
           return;
         }
         delete self.callbacks[respId];
@@ -109,7 +109,7 @@ MonitorAgent.prototype.connect = function(port, host, cb) {
           }
         } else {
           //notify should not have a callback
-          logger.error('notify should not have a callback.');
+          Logger.error('notify should not have a callback.');
         }
       });
     }
@@ -213,7 +213,7 @@ MonitorAgent.prototype.get = function(moduleId) {
  */
 MonitorAgent.prototype.notify = function(moduleId, msg) {
   if (this.state !== ST_REGISTERED) {
-    logger.error('agent can not notify now, state:' + this.state);
+    Logger.error('agent can not notify now, state:' + this.state);
     return;
   }
   this.doSend('monitor', protocol.composeRequest(null, moduleId, msg));
@@ -222,7 +222,7 @@ MonitorAgent.prototype.notify = function(moduleId, msg) {
 
 MonitorAgent.prototype.request = function(moduleId, msg, cb) {
   if (this.state !== ST_REGISTERED) {
-    logger.error('agent can not request now, state:' + this.state);
+    Logger.error('agent can not request now, state:' + this.state);
     return;
   }
   var reqId = this.reqId++;

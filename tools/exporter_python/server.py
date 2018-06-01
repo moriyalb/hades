@@ -168,6 +168,7 @@ def load(customPath):
 		"StandaloneAccount":basicCfg["StandaloneAccount"],
 		"foreDtMd5": basicCfg["foreDtMd5"] if 'foreDtMd5' in basicCfg else False ,
 		"Servers":{},
+		"Envs":{},
 		"Extras":{},
 		"Hosts":{}
 	}
@@ -176,10 +177,11 @@ def load(customPath):
 		cname = cfg['Name']
 		ctype = cfg['Type']
 		#print("======= ", cname, ctype)
+		svrCfg["Cluster"]["Envs"][cname] = ctype
 		if ctype == "Base":
 			importBase(svrCfg, cfg)			
 		elif ctype == "Unique":
-			env = cfg['Name']
+			env = cfg['Name']			
 			if not env in svrCfg['Servers']:
 				svrCfg['Servers'][env] = {}
 			importUnique(svrCfg, env, cfg["Hosts"], cfg["Ports"], cfg["Servers"], True)

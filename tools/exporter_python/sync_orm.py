@@ -153,10 +153,10 @@ def diffField(fieldOld, fieldNew, alters, fieldName):
 	#print("diff ------- ", fieldOld, fieldNew, fieldName)
 	if fieldOld['type'] != fieldNew['type']:
 		atp = AT_COLUMN_TYPE
-		print("diffField1 ---------------- ", fieldOld)
-		print("diffField2 ---------------- ", fieldNew)
-		if isLiteType(fieldOld['type'], fieldNew['type']):
-			atp = AT_COLUMN_LITE_TYPE
+		#print("diffField1 ---------------- ", fieldOld)
+		#print("diffField2 ---------------- ", fieldNew)
+		# if isLiteType(fieldOld['type'], fieldNew['type']):
+		# 	atp = AT_COLUMN_LITE_TYPE
 		alters.append({
 			'alterType':atp,
 			'field':fieldName,
@@ -251,9 +251,11 @@ def isSameTable(tableOld, tableNew):
 			return False,None
 		#print("	 	check table field -> field exists done.")
 		diffField(tableOld['fields'][key], tableNew['fields'][key], alters, key)
-		for alter in alters:
-			if alter['alterType'] != AT_COLUMN_LITE_TYPE or alter['alterType'] != AT_COLUMN_INDEX:
-				return False,None
+		if len(alters) > 0:
+			return False, None
+		# for alter in alters:
+		# 	if alter['alterType'] != AT_COLUMN_LITE_TYPE or alter['alterType'] != AT_COLUMN_INDEX:
+		# 		return False,None
 		#print("	 	check table field -> field check done.")
 	for key in tableNew['fields']:
 		if not key in tableOld['fields']:

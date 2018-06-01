@@ -6,13 +6,21 @@ const Hades = GlobalHades
 
 class LoginMgr {
     constructor() {
+		
+	}
+
+	onInit(){
 		this._initLoginProxy()
+	}
+
+	onFini(){
+		
 	}
 	
 	_initLoginProxy(){
-		const lpEntityClass = Hades.Schema.getEntityMethodClass(Hades.Config.loginProxy())
-		//login entity don'es own any properties.
-		this.loginProxy = new lpEntityClass()
+		//Login proxy is a singleton in each frontend server.
+		this.loginProxy = Hades.Schema.Entity.createSingle(Hades.Config.loginProxy())
+		this.loginProxy.onCreate()
 	}
 
 	getLoginProxy(){
@@ -48,7 +56,7 @@ class LoginMgr {
 	//remote
 	async kickProxy(args){
 		let {proxyId, reason} = args
-		let ss = Hades.App.get("sessionService")
+		let ss = Hades.App.getSessionService()
 		let kick = util.promisify(ss.kick.bind(ss))
 		return await kick(proxyId, reason)
 	}

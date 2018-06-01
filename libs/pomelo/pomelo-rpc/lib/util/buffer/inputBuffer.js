@@ -114,7 +114,7 @@ InputBuffer.prototype.readObject = function() {
 		var bearcat = Utils.getBearcat();
 		var bean = bearcat.getBean(id);
 		if(!bean) {
-			logger.error('readBean bean not found %s', id);
+			Logger.error('readBean bean not found %s', id);
 			return;
 		}
 		bean.readFields(this);
@@ -126,7 +126,7 @@ InputBuffer.prototype.readObject = function() {
 	} else if (typeMap['number'] == type) {
 		instance = this.readInt();
 	} else {
-		logger.error('readObject invalid read type %j', type);
+		Logger.error('readObject invalid read type %j', type);
 	}
 
 	return instance;

@@ -27,7 +27,7 @@ var Remote = function (app) {
  */
 Remote.prototype.pushMessage = function (pushMapId, msg, uids, opts, cb) {
 	if (!msg) {
-		logger.error('Can not send empty message! pushMapId : %i, compressed msg : %j',
+		Logger.error('Can not send empty message! pushMapId : %i, compressed msg : %j',
 			pushMapId, msg);
 		utils.invokeCallback(cb, new Error('can not send empty message.'));
 		return;
@@ -49,7 +49,7 @@ Remote.prototype.pushMessage = function (pushMapId, msg, uids, opts, cb) {
 			}
 		}
 	}
-	//logger.debug('[%s] pushMessage uids: %j, msg: %j, sids: %j', this.app.serverId, uids, msg, sids);
+	//Logger.debug('[%s] pushMessage uids: %j, msg: %j, sids: %j', this.app.serverId, uids, msg, sids);
 	connector.send(Message.TYPE_PUSH, pushMapId, msg, sids, opts, function (err) {
 		utils.invokeCallback(cb, err, fails);
 	});

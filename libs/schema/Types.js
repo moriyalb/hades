@@ -37,14 +37,35 @@ const TypeCheckers = {
 		if (_.isBoolean(value)){
 			value = value ? 1 : 0
 		}
-		return BasicTypeCheckers[type.type](value)
+		let r = BasicTypeCheckers[type.type](value)
+		if (!r && Hades.Config.isDebugging()){
+			console.trace("	<!>BasicType Checking Fail -> ", value, type.type)
+		}
+		return r
 	},
 	"enum":(value, type) => {
-		return !!type.fields[value]
+		let r
+		if (type.bit){
+			r = value >= 0 && value <= type.max
+			if (!r && Hades.Config.isDebugging()){
+				console.trace("	<!>EnumType(Bit) Checking Fail -> ", value, type.max)
+			}
+		}else{
+			r = !!type.fields[value]
+			if (!r && Hades.Config.isDebugging()){
+				console.trace("	<!>EnumType Checking Fail -> ", value, type.fields)
+			}
+		}		
+		return r
 	},
 	"array": (value, type) => {
 		let nt = TypeConfig.types[type.type]
-		if (!_.isArray(value)) return false
+		if (!_.isArray(value)){
+			if (Hades.Config.isDebugging()){
+				console.trace("	<!>ArrayType Checking Fail -> ", value, nt)
+			}
+			return false
+		}
 		for (let v of value){
 			if (!TypeCheckers[nt.ctype](v, nt)){
 				return false
@@ -54,9 +75,10 @@ const TypeCheckers = {
 	},
 	"object":(value, type) => {
 		for (let field in type.fields){
-			if (!value[field]){
-				//TODO, is null can be true ?
-				//console.warn("filed not set value")
+			if (_.isNil(value[field])){
+				// if (Hades.Config.isDebugging()){
+				// 	console.warn("	<!>ObjectType Checking Warning. field lost -> ", value, field)
+				// }
 				continue
 			}
 			let nt = TypeConfig.types[type.fields[field]]			
@@ -128,9 +150,10 @@ class Types {
 		let typeInfo = this.getCompositeType(type)	
 		if (_.isNil(value)){
 			if (!canNil){
-				console.error("Client Args lost type", this.getTypeDesc(typeId))
+				console.error("<!>Types::AssertType Nil Value -> ", this.getTypeDesc(typeId))
 				return false
-			}			
+			}
+			return true	
 		}
 		return TypeCheckers[typeInfo.ctype](value, typeInfo)
 	}
@@ -162,6 +185,10 @@ class Types {
 
 	isIntegerKey(type){
 		return IntegerValues.has(type)
+	}
+
+	isSmallArray(type){
+		return (type.ctype == "array" && _.isSafeInteger(type.size) && type.size <= 6 )
 	}
 }
 

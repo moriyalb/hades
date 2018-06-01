@@ -2,7 +2,8 @@
  * Filter for rpc log.
  * Record used time for remote process call.
  */
-var rpcLogger = PomeloLogger.getLogger('pomelo', __filename);
+const Hades = GlobalHades
+var rpcLogger = Hades.Logger.getLogger('pomelo', __filename);
 var utils = require('../../util/utils');
 
 module.exports = function() {

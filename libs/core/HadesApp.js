@@ -17,9 +17,7 @@ class HadesApp{
 		}
 		this.app = Hades.Pomelo.createApp()
 		this.app.set("name", name)
-
-		this.get = this.app.get.bind(this.app)
-		//this.set = this.app.set.bind(this.app)
+		this.registerAdmin = this.app.registerAdmin.bind(this.app)
 		return this
 	}
 
@@ -28,11 +26,6 @@ class HadesApp{
 			console.error("Application is not created!")
 			return
 		}
-
-		//route proxy forward message for handlers.
-		this.app.route(Hades.Config.backendServer(), (session, msg, app, cb) => {
-			cb(null, session.get("backendID"))
-		})
 		
 		this.app.start((err)=>{
 			if (err){
@@ -40,8 +33,7 @@ class HadesApp{
 				cb(new Error(err))
 				return
 			}
-			this._start()
-			this._addClusterServer()
+			this._start()			
 			cb()
 		})
 	}
@@ -65,6 +57,7 @@ class HadesApp{
 
 	configure(cfgs){
 		for (let [env, st, func] of cfgs){
+			//console.log("on configure -> ", env, st, Hades.Config.matchEnv(env), Hades.Config.matchServer(st))
 			if (!Hades.Config.matchEnv(env)){
 				continue
 			}
@@ -76,6 +69,7 @@ class HadesApp{
 	}
 
 	rpc(st, ename, remote){
+		//console.log("HadesApp Rpc -> ", st, ename, remote, this.app.rpc)
 		return util.promisify(this.app.rpc[st][ename][remote].toServer)
 	}
 
@@ -85,8 +79,37 @@ class HadesApp{
 		return await pushMethod(pushId, msg, uids)
 	}
 
-	routeDefaultBase(env, ename){
-		console.log("routeDefaultBase -< ", env, ename)
+	getSessionService(){
+		return this.app.get("sessionService")
+	}
+
+	hasSession(sid){
+		return !!this.app.get("sessionService").get(sid)
+	}
+
+	getBackendId(session){
+		return session.get("backendID")
+	}
+
+	async kickByUidBackend(frontID, playerID, reason) {
+		let backendSessionService = this.app.get("backendSessionService")
+		await util.promisify(backendSessionService.kickByUid.bind(backendSessionService))(frontID, playerID, reason)
+	}
+	
+	async kickByUidFrontend(frontID, playerID, reason) {
+		if (frontID == Hades.Config.getServerId()){
+			let sessionService = this.app.get("sessionService")
+			await util.promisify(sessionService.kick.bind(sessionService))(playerID, reason)
+		}else{
+			await Hades.SysRemote.LoginMgr.kickProxy(frontID, {
+				proxyId:playerID,
+				reason:"RELOGIN"
+			})
+		}		
+	}
+
+	routeDefaultBase(ename, env){
+		//console.log("routeDefaultBase -< ", env, ename)
 		let entity = Hades.Config.schemaEntities()[ename]		
 		let {___, count} = Hades.Config.clusterCfg().Servers[entity.server]
 		if (!env) env = Hades.Config.getEnv()
@@ -100,16 +123,18 @@ class HadesApp{
 	}
 
 	_start(){
+		this._addClusterServer()
 		if (Hades.Config.isUniqueMaster()) {
 			Hades.RedisMgr.initGUID()
 		}
 	}
 
 	_addClusterServer(){
-		let config = _.omit(Hades.Config.serverCfg(), Hades.Config.getEnv())
-		for (let env in config) {
-			for (let serverType in config[env]) {
-				let servers = config[env][serverType]
+		for (let env in Hades.Config.serverCfg()) {			
+			if (env ===  Hades.Config.getEnv()) continue
+			let config = Hades.Config.serverCfg()[env]
+			for (let serverType in config) {
+				let servers = config[serverType]
 				for (let sinfo of servers) {					
 					this.app.addServers([{
 						id : sinfo.id,

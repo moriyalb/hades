@@ -102,7 +102,7 @@ OutputBuffer.prototype.writeObject = function(object) {
 	// console.log('writeObject type %s', type);
 	// console.log(object)
 	if (!type) {
-		logger.error('invalid writeObject ' + object);
+		Logger.error('invalid writeObject ' + object);
 		return;
 	}
 
@@ -135,7 +135,7 @@ OutputBuffer.prototype.writeObject = function(object) {
 
 	if (typeMap['object'] == type) {
 		this.writeString(JSON.stringify(object));
-		// logger.error('invalid writeObject object must be bearcat beans and should implement writeFields and readFields interfaces');
+		// Logger.error('invalid writeObject object must be bearcat beans and should implement writeFields and readFields interfaces');
 		return;
 	}
 

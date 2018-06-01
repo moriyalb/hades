@@ -66,7 +66,7 @@ Application.init = function (opts) {
 	appUtil.defaultConfiguration(this);
 
 	this.state = STATE_INITED;
-	//logger.info(`application inited: ${this.getServerId()}`);
+	//Logger.info(`application inited: ${this.getServerId()}`);
 };
 
 /**
@@ -220,7 +220,7 @@ Application.load = function (name, component, opts) {
 
 	if (name && this.components[name]) {
 		// ignore duplicat component
-		logger.warn('ignore duplicate component: %j', name);
+		Logger.warn('ignore duplicate component: %j', name);
 		return;
 	}
 
@@ -297,20 +297,6 @@ Application.route = function (serverType, routeFunc) {
 };
 
 /**
- * Set before stop function. It would perform before servers stop.
- *
- * @param  {Function} fun before close function
- * @return {Void}
- * @memberOf Application
- */
-Application.beforeStopHook = function (fun) {
-	logger.warn('this method was deprecated in pomelo 0.8');
-	if (!!fun && typeof fun === 'function') {
-		this.set(Constants.KEYWORDS.BEFORE_STOP_HOOK, fun);
-	}
-};
-
-/**
  * Start application. It would load the default components and start all the loaded components.
  *
  * @param  {Function} cb callback function
@@ -324,7 +310,7 @@ Application.start = function (cb) {
 	}
 
 	var self = this;
-	appUtil.startByType(self, function () {
+	appUtil.startByType(self, async function () {
 		appUtil.loadDefaultComponents(self);
 		var startUp = function () {			
 			appUtil.optComponents(self.loaded, Constants.RESERVED.START, function (err) {
@@ -332,17 +318,16 @@ Application.start = function (cb) {
 				if (err) {
 					utils.invokeCallback(cb, err);
 				} else {
-					//logger.info(`${self.getServerId()} enter after start...`);
+					//Logger.info(`${self.getServerId()} enter after start...`);
 					self.afterStart(cb);
 				}
 			});
 		};
 		var beforeFun = self.lifecycleCbs[Constants.LIFECYCLE.BEFORE_STARTUP];
 		if (!!beforeFun) {
-			beforeFun.call(null, self, startUp);
-		} else {
-			startUp();
+			await beforeFun()		
 		}
+		startUp()
 	});
 };
 
@@ -364,7 +349,7 @@ Application.afterStart = function (cb) {
 		self.state = STATE_STARTED;
 		var id = self.getServerId();
 		if (!err) {
-			//logger.info(`${id} finish start`);
+			//Logger.info(`${id} finish start`);
 		}
 		if (!!afterFun) {
 			afterFun.call(null, self, function () {
@@ -374,7 +359,7 @@ Application.afterStart = function (cb) {
 			utils.invokeCallback(cb, err);
 		}
 		var usedTime = Date.now() - self.startTime;
-		//logger.info(`${id} startup in ${usedTime} ms`);
+		//Logger.info(`${id} startup in ${usedTime} ms`);
 		self.event.emit(events.START_SERVER, id);
 	});
 };
@@ -384,9 +369,9 @@ Application.afterStart = function (cb) {
  *
  * @param  {Boolean} force whether stop the app immediately
  */
-Application.stop = function (force) {
+Application.stop = async function (force) {
 	if (this.state > STATE_STARTED) {
-		logger.warn('[pomelo application] application is not running now.');
+		Logger.warn('[pomelo application] application is not running now.');
 		return;
 	}
 	this.state = STATE_STOPED;
@@ -409,14 +394,16 @@ Application.stop = function (force) {
 			}
 		});
 	};
+	
 	var fun = this.get(Constants.KEYWORDS.BEFORE_STOP_HOOK);
 	var stopFun = this.lifecycleCbs[Constants.LIFECYCLE.BEFORE_SHUTDOWN];
 	if (!!stopFun) {
-		stopFun.call(null, this, shutDown, cancelShutDownTimer);
+		await stopFun()
+		shutDown()
 	} else if (!!fun) {
 		utils.invokeCallback(fun, self, shutDown, cancelShutDownTimer);
 	} else {
-		shutDown();
+		shutDown()
 	}
 };
 
@@ -548,7 +535,7 @@ Application.registerAdmin = function (moduleId, module, opts) {
  */
 Application.use = function (plugin, opts) {
 	if (!plugin.components) {
-		logger.error('invalid components, no components exist');
+		Logger.error('invalid components, no components exist');
 		return;
 	}
 
@@ -557,7 +544,7 @@ Application.use = function (plugin, opts) {
 	var dir = path.dirname(plugin.components);
 
 	if (!fs.existsSync(plugin.components)) {
-		logger.error('fail to find components, find path: %s', plugin.components);
+		Logger.error('fail to find components, find path: %s', plugin.components);
 		return;
 	}
 
@@ -569,7 +556,7 @@ Application.use = function (plugin, opts) {
 		var param = opts[name] || {};
 		var absolutePath = path.join(dir, Constants.DIR.COMPONENT, filename);
 		if (!fs.existsSync(absolutePath)) {
-			logger.error('component %s not exist at %s', name, absolutePath);
+			Logger.error('component %s not exist at %s', name, absolutePath);
 		} else {
 			self.load(require(absolutePath), param);
 		}
@@ -580,7 +567,7 @@ Application.use = function (plugin, opts) {
 		return;
 	} else {
 		if (!fs.existsSync(plugin.events)) {
-			logger.error('fail to find events, find path: %s', plugin.events);
+			Logger.error('fail to find events, find path: %s', plugin.events);
 			return;
 		}
 
@@ -590,7 +577,7 @@ Application.use = function (plugin, opts) {
 			}
 			var absolutePath = path.join(dir, Constants.DIR.EVENT, filename);
 			if (!fs.existsSync(absolutePath)) {
-				logger.error('events %s not exist at %s', filename, absolutePath);
+				Logger.error('events %s not exist at %s', filename, absolutePath);
 			} else {
 				bindEvents(require(absolutePath), self);
 			}
@@ -854,7 +841,7 @@ Application.replaceServers = function (servers) {
  */
 Application.addCrons = function (crons) {
 	if (!crons || !crons.length) {
-		logger.warn('crons is not defined.');
+		Logger.warn('crons is not defined.');
 		return;
 	}
 	this.event.emit(events.ADD_CRONS, crons);
@@ -868,7 +855,7 @@ Application.addCrons = function (crons) {
  */
 Application.removeCrons = function (crons) {
 	if (!crons || !crons.length) {
-		logger.warn('ids is not defined.');
+		Logger.warn('ids is not defined.');
 		return;
 	}
 	this.event.emit(events.REMOVE_CRONS, crons);
@@ -883,6 +870,7 @@ var replaceServer = function (slist, serverInfo) {
 	}
 	slist.push(serverInfo);
 };
+
 
 var removeServer = function (slist, id) {
 	if (!slist || !slist.length) {

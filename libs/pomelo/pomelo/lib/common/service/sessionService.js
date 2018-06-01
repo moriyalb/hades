@@ -352,7 +352,7 @@ SessionService.prototype.getClientAddressBySessionId = function (sid) {
 SessionService.prototype.sendMessage = function (sid, msg) {
 	var session = this.get(sid);
 	if (!session) {
-		//logger.debug('Fail to send message for non-existing session, sid: ' + sid + ' msg: ' + msg);
+		//Logger.debug('Fail to send message for non-existing session, sid: ' + sid + ' msg: ' + msg);
 		return false;
 	}
 
@@ -372,7 +372,7 @@ SessionService.prototype.sendMessageByUid = function (uid, msg) {
 	var sessions = this.getByUid(uid);
 
 	if (!sessions) {
-		logger.debug('fail to send message by uid for non-existing session. uid: %j',
+		Logger.debug('fail to send message by uid for non-existing session. uid: %j',
 			uid);
 		return false;
 	}
@@ -546,7 +546,7 @@ Session.prototype.sendBatch = function (msgs) {
  * @api public
  */
 Session.prototype.closedByReason = function (reason) {
-	//logger.info('session on [%s] is closed with session id: %s', this.frontendId, this.id, this.__state__);
+	//Logger.info('session on [%s] is closed with session id: %s', this.frontendId, this.id, this.__state__);
 	if (this.__state__ === ST_CLOSED) {
 		return;
 	}

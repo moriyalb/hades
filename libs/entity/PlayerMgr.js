@@ -6,13 +6,23 @@ const Hades = GlobalHades
 const Methods = Hades.Schema.Methods
 
 class PlayerMgr {
-    constructor() {
+    onInit(){
 		this.players = new Map()
 		this.leavingPlayers = new Map()
 	}
 
+	onFini(){
+		
+	}
+
 	getPlayer(proxyId){
 		return this.players.get(proxyId)
+	}
+
+	*getPlayers(){
+		for (let [pid, p] of this.players){
+			yield [pid, p]
+		}
 	}
 
 	async proxyLogin(args){
@@ -36,7 +46,7 @@ class PlayerMgr {
 		let info = {}
 		await player.onPrepare(info)
 		
-		return player, info
+		return {player, clientInfo:info}
 	}
 
 	async proxyLogout(args){
@@ -57,6 +67,42 @@ class PlayerMgr {
 		}else{
 			this._addLeavingTimer(proxyId)			
 		}	
+	}
+
+	async proxyCanRelogin(args){
+		let {proxyId, guid, opts} = args
+		let player = this.players.get(proxyId)
+		if (!player){
+			return false
+		}
+		if (!guid || player.guid != guid){
+			return false
+		}
+		return true
+	}
+
+	async proxyRelogin(args){		
+		let {proxyId, frontendId, opts} = args
+		//console.log("PlayerMgr::ProxyID -> ", proxyId)
+		let player = this.players.get(proxyId)
+		if (!player){			
+			return {player}
+		}
+		if (!opts.force){
+			if (!guid || player.guid != opts.guid){
+				return {player:null}
+			}
+		}
+		this._clearLeavingTimer(proxyId)
+
+		player._setFrontendId(frontendId)
+		
+		await player.onConnect(opts)
+
+		let info = {}
+		await player.onPrepare(info)
+		
+		return {player, clientInfo:info}
 	}
 
 	async playerCleanUp(proxyId){

@@ -88,7 +88,7 @@ class RedisMgr {
 	}
 
 	async removeProxy(guid) {
-		await this.clientClusterCache().hmset(this._mirrorKey(guid), HadesConst.RedisKey.OfflineTime, parseInt(_.now() / 1000))
+		await this.clientClusterCache().hmset(this._mirrorKey(guid), HadesConst.RedisKey.OfflineTime, Hades.TimeUtil.inow())
 		await this.clientClusterCache().expire(this._mirrorKey(guid), CACHE_EXPIRE)
 	}
 

@@ -29,12 +29,11 @@ module.exports = function (app, opts) {
 	// cacheMsg is deprecated, just for compatibility here.
 	opts.bufferMsg = opts.bufferMsg || opts.cacheMsg || false;
 	opts.interval = opts.interval || 30;
-	opts.router = genRouteFun();
 	opts.context = app;
 	opts.routeContext = app;
 	if (app.enabled('rpcDebugLog')) {
 		opts.rpcDebugLog = true;
-		opts.rpcLogger = PomeloLogger.getLogger('pomelo', __filename);
+		opts.rpcLogger = Hades.Logger.getLogger('pomelo', __filename);
 	}
 
 	return new Component(app, opts);
@@ -67,7 +66,7 @@ pro.name = '__proxy__';
  */
 pro.start = function (cb) {
 	if (this.opts.enableRpcLog) {
-		logger.warn('enableRpcLog is deprecated in 0.8.0, please use app.rpcFilter(pomelo.rpcFilters.rpcLog())');
+		Logger.warn('enableRpcLog is deprecated in 0.8.0, please use app.rpcFilter(pomelo.rpcFilters.rpcLog())');
 	}
 	var rpcBefores = this.app.get(Constants.KEYWORDS.RPC_BEFORE_FILTER);
 	var rpcAfters = this.app.get(Constants.KEYWORDS.RPC_AFTER_FILTER);
@@ -228,36 +227,4 @@ var getProxyRecords = function (app, sinfo) {
 	records.push(pathUtil.remotePathRecord('user', sinfo.serverType, record))
 
 	return records;
-};
-
-var genRouteFun = function () {
-	return function (session, msg, app, cb) {
-		var routes = app.get('__routes__');
-
-		if (!routes) {
-			defaultRoute(session, msg, app, cb);
-			return;
-		}
-
-		var type = msg.serverType,
-			route = routes[type] || routes['default'];
-
-		if (route) {
-			route(session, msg, app, cb);
-		} else {
-			defaultRoute(session, msg, app, cb);
-		}
-	};
-};
-
-var defaultRoute = function (session, msg, app, cb) {
-	var list = app.getServersByType(msg.serverType);
-	if (!list || !list.length) {
-		cb(new Error('can not find server info for type:' + msg.serverType));
-		return;
-	}
-
-	var uid = session ? (session.uid || '') : '';
-	var index = Math.abs(crc.crc32(uid.toString())) % list.length;
-	utils.invokeCallback(cb, null, list[index].id);
 };

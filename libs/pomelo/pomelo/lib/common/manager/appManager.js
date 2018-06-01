@@ -12,18 +12,18 @@ manager.transaction = function(name, conditions, handlers, retry) {
     retry = 1;
   }
   if(typeof name !== 'string') {
-    logger.error('transaction name is error format, name: %s.', name);
+    Logger.error('transaction name is error format, name: %s.', name);
     return;
   }
   if(typeof conditions !== 'object' || typeof handlers !== 'object') {
-    logger.error('transaction conditions parameter is error format, conditions: %j, handlers: %j.', conditions, handlers);
+    Logger.error('transaction conditions parameter is error format, conditions: %j, handlers: %j.', conditions, handlers);
     return;
   }
 
   var cmethods=[] ,dmethods=[], cnames=[], dnames=[];
   for(var key in conditions) {
     if(typeof key !== 'string' || typeof conditions[key] !== 'function') {
-      logger.error('transaction conditions parameter is error format, condition name: %s, condition function: %j.', key, conditions[key]);
+      Logger.error('transaction conditions parameter is error format, condition name: %s, condition function: %j.', key, conditions[key]);
       return;
     }
     cnames.push(key);
@@ -55,7 +55,7 @@ manager.transaction = function(name, conditions, handlers, retry) {
       process.nextTick(function() {
         for(var key in handlers) {
           if(typeof key !== 'string' || typeof handlers[key] !== 'function') {
-            logger.error('transcation handlers parameter is error format, handler name: %s, handler function: %j.', key, handlers[key]);
+            Logger.error('transcation handlers parameter is error format, handler name: %s, handler function: %j.', key, handlers[key]);
             return;
           }
           dnames.push(key);
@@ -103,7 +103,7 @@ manager.transaction = function(name, conditions, handlers, retry) {
           },
           function(err) {
             if(err) {
-              logger.error('transaction process is executed with error: %j', err);
+              Logger.error('transaction process is executed with error: %j', err);
             }
             // callback will not pass error
           }

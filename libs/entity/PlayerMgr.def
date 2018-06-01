@@ -20,6 +20,24 @@
 				"reason":"string",
 				"immediately":"utiny"
 			}
+		},
+		"proxyCanRelogin":{
+			"req":{
+				"proxyId":"uint",
+				"guid":"string",
+				"opts":"udo"	
+			}
+		},
+		"proxyRelogin":{
+			"req":{
+				"proxyId":"uint",
+				"frontendId":"uint",
+				"opts":"udo"
+			},
+			"resp":{
+				"player":"mailbox",
+				"clientInfo":"udo"
+			}
 		}
 	}
 }

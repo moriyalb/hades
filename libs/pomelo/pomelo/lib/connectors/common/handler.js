@@ -51,7 +51,7 @@ var handle = function(socket, pkg) {
   if(!!handler) {
     handler(socket, pkg);
   } else {
-    logger.error('could not find handle invalid data package.');
+    Logger.error('could not find handle invalid data package.');
     socket.disconnect();
   }
 };

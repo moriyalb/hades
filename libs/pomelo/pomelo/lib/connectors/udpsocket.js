@@ -59,7 +59,7 @@ Socket.prototype.send = function(msg) {
 Socket.prototype.sendRaw = function(msg) {
 	this.socket.send(msg, 0, msg.length, this.port, this.host, function(err, bytes) {
     if(!!err)	{
-      logger.error('send msg to remote with err: %j', err.stack);
+      Logger.error('send msg to remote with err: %j', err.stack);
       return;
     }
   });

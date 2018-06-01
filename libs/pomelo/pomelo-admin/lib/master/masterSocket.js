@@ -80,7 +80,7 @@ MasterSocket.prototype.onMonitor = function(msg) {
 	var self = this;
 	var type = this.type;
 	if (type === Constants.TYPE_CLIENT) {
-		logger.error('invalid message from monitor, but current connect type is client.');
+		Logger.error('invalid message from monitor, but current connect type is client.');
 		return;
 	}
 
@@ -90,7 +90,7 @@ MasterSocket.prototype.onMonitor = function(msg) {
 		// a response from monitor
 		var cb = self.agent.callbacks[respId];
 		if (!cb) {
-			logger.warn('unknown resp id:' + respId);
+			Logger.warn('unknown resp id:' + respId);
 			return;
 		}
 
@@ -111,7 +111,7 @@ MasterSocket.prototype.onMonitor = function(msg) {
 			}
 		} else {
 			//notify should not have a callback
-			logger.warn('notify should not have a callback.');
+			Logger.warn('notify should not have a callback.');
 		}
 	});
 }
@@ -126,7 +126,7 @@ MasterSocket.prototype.onClient = function(msg) {
 
 	var type = this.type;
 	if (type !== Constants.TYPE_CLIENT) {
-		logger.error('invalid message to client, but current connect type is ' + type);
+		Logger.error('invalid message to client, but current connect type is ' + type);
 		return;
 	}
 
@@ -148,7 +148,7 @@ MasterSocket.prototype.onClient = function(msg) {
 				}
 			} else {
 				//notify should not have a callback
-				logger.warn('notify should not have a callback.');
+				Logger.warn('notify should not have a callback.');
 			}
 		});
 	} else {
@@ -162,7 +162,7 @@ MasterSocket.prototype.onClient = function(msg) {
 				}
 			} else {
 				//notify should not have a callback
-				logger.warn('notify should not have a callback.');
+				Logger.warn('notify should not have a callback.');
 			}
 		});
 	}
@@ -261,7 +261,7 @@ MasterSocket.prototype.repushQosMessage = function(serverId) {
 }
 
 MasterSocket.prototype.onError = function(err) {
-	// logger.error('server %s error %s', this.id, err.stack);
+	// Logger.error('server %s error %s', this.id, err.stack);
 	// this.onDisconnect();
 }
 

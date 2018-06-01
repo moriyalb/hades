@@ -2,7 +2,8 @@
  * Filter for rpc log.
  * Reject rpc request when toobusy
  */
-var rpcLogger = PomeloLogger.getLogger('pomelo', __filename);
+const Hades = GlobalHades
+var rpcLogger = Hades.Logger.getLogger('pomelo', __filename);
 var toobusy = null;
 
 var DEFAULT_MAXLAG = 70;

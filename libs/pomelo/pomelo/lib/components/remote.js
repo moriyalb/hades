@@ -23,7 +23,7 @@ module.exports = function (app, opts) {
 	opts.interval = opts.interval || 30;
 	if (app.enabled('rpcDebugLog')) {
 		opts.rpcDebugLog = true;
-		opts.rpcLogger = PomeloLogger.getLogger('pomelo', __filename);
+		opts.rpcLogger = Hades.Logger.getLogger('pomelo', __filename);
 	}
 	return new Component(app, opts);
 };

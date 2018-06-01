@@ -79,17 +79,17 @@ PushScheduler.prototype.schedule = function(msg, recvs, opts, cb) {
         if(self.scheduler[id] && typeof self.scheduler[id].schedule === 'function') {
           self.scheduler[id].schedule(msg, recvs, opts, cb);
         } else {
-          logger.error('invalid pushScheduler id, id: %j', id);
+          Logger.error('invalid pushScheduler id, id: %j', id);
         }
       });
     } else {
-      logger.error('the selector for pushScheduler is not a function, selector: %j', self.selector);
+      Logger.error('the selector for pushScheduler is not a function, selector: %j', self.selector);
     }
   } else {
     if (typeof self.scheduler.schedule === 'function') {
       self.scheduler.schedule(msg, recvs, opts, cb);
     } else {
-      logger.error('the scheduler does not have a schedule function, scheduler: %j', self.scheduler);
+      Logger.error('the scheduler does not have a schedule function, scheduler: %j', self.scheduler);
     }
   }
 };

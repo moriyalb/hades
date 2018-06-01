@@ -2,7 +2,8 @@
  * Filter for toobusy.
  * if the process is toobusy, just skip the new request
  */
-var conLogger = PomeloLogger.getLogger('pomelo', __filename);
+const Hades = GlobalHades
+var conLogger = Hades.Logger.getLogger('pomelo', __filename);
 var toobusy = null;
 var DEFAULT_MAXLAG = 70;
 

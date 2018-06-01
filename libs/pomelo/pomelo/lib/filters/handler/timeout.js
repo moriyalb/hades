@@ -23,13 +23,13 @@ var Filter = function(timeout, maxSize) {
 Filter.prototype.before = function(msg, session, next) {
   var count = utils.size(this.timeouts);
   if(count > this.maxSize) {
-    logger.warn('timeout filter is out of range, current size is %s, max size is %s', count, this.maxSize);
+    Logger.warn('timeout filter is out of range, current size is %s, max size is %s', count, this.maxSize);
     next();
     return;
   }
   this.curId++;
   this.timeouts[this.curId] = setTimeout(function() {
-    logger.error('request %j timeout.', msg.__route__);
+    Logger.error('request %j timeout.', msg.__route__);
   }, this.timeout);
   session.__timeout__ = this.curId;
   next();

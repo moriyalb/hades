@@ -15,6 +15,7 @@ manager.timeout = 3000;
  * @param {Number}   timeout   timeout for task
  */
 manager.addTask = function(key, fn, ontimeout, timeout) {
+	console.log("taskManager -> addTask ", key)
   var queue = queues[key];
   if(!queue) {
     queue = sequeue.createQueue(manager.timeout);

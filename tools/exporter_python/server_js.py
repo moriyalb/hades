@@ -12,20 +12,24 @@ IMMANENTS = {
 	0:[
 		["onCreate", "When this entity is first created in database", 1, []],
 		["onLoad", "When this entity is loaded", 1, []],
-		["onPrepare", "Make this entity info.", 1, ['clientInfo']],
-		["onConnect", "When this entity connected.", 1, ['opts']],
-		["onDisconnect", "When this entity disconnected.", 2, ['reason']],
-		["onDestroy", "When this entity destroyed.", 2, []]
+		["onPrepare", "", 1, ['clientInfo']],
+		["onConnect", "When this entity connected", 1, ['opts']],
+		["onDisconnect", "When this entity disconnected", 2, ['reason']],
+		["onDestroy", "When this entity destroyed", 2, []]
 	],
 	2:[
-		["loadFromDB", "will be called when then entity created. notice that the database maybe no data.", 1, []],
-		["saveToDB", "will be called when the entity destroyed", 1, []]
+		["onCreate", "When this entity is created", 1, []],
+		["onLoad", "When this entity is created from database", 1, []],
+		["onSave", "When this entity is saved to database", 1, []]
 	],
 	1:[
-		["onInit", "Server start hook", 1, []],
-		["onFini", "Server shutdown hook", 1, []],
+		["onInit", "When the server start", 1, []],
+		["onFini", "When the server shutdown", 1, []],
 		["onRoute", '''Route function. this method should return a valid serverId. 
 	 * Don't use ==this== in this method since this method will be call the on the remote server.''', -1, ['routeParam', 'ename']],
+	],
+	9:[
+		["onCreate", "When the entity is created", 1, []],
 	]
 }
 		
@@ -69,11 +73,14 @@ def exportJsEntityMethod(cfg, ename, ecfg, userCode, f):
 
 	immanents = []
 	etype = cfg['done_entities'][ename]['etype']
-	if cfg['done_proxies']['LoginProxy'] != ename:
-		f.write('''\t//===========================================================================================\n''')
-		f.write('''\t// Immanents\n''')
-		f.write('''\t//===========================================================================================\n''')		
+
+	f.write('''\t//===========================================================================================\n''')
+	f.write('''\t// Immanents\n''')
+	f.write('''\t//===========================================================================================\n''')
+	if cfg['done_proxies']['LoginProxy'] != ename:				
 		immanents = IMMANENTS[etype]
+	else:
+		immanents = IMMANENTS[9] #special for login proxy
 
 	for imm in immanents:		
 		f.write('''\t/**\n''')

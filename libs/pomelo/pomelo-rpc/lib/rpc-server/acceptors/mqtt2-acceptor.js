@@ -43,7 +43,7 @@ pro.listen = function(port) {
   this.server.listen(port);
 
   this.server.on('error', function(err) {
-    logger.error('rpc server is error: %j', err.stack);
+    Logger.error('rpc server is error: %j', err.stack);
     self.emit('error', err);
   });
 
@@ -62,7 +62,7 @@ pro.listen = function(port) {
       } catch (err) {
         var resp = Coder.encodeServer(pkg.id, [cloneError(err)]);
         // doSend(socket, resp);
-        logger.error('process rpc message error %s', err.stack);
+        Logger.error('process rpc message error %s', err.stack);
       }
     });
 

@@ -223,8 +223,9 @@ var doForward = function (app, msg, session, cb) {
 	//should route to other servers
 	try {
 		let serverType = Hades.Config.backendServer();
-		app.sysrpc[serverType].msgRemote.forwardMessage(
-			session,
+		let serverId = Hades.App.getBackendId(session)
+		app.sysrpc[serverType].msgRemote.forwardMessage.toServer(
+			serverId,
 			msg,
 			session.export(),
 			function (err, resp, opts) {

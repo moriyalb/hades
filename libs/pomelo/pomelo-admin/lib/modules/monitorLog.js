@@ -61,7 +61,7 @@ Module.prototype.monitorHandler = function(agent, msg, cb) {
 Module.prototype.clientHandler = function(agent, msg, cb) {
 	agent.request(msg.serverId, module.exports.moduleId, msg, function(err, res) {
 		if(err) {
-			logger.error('fail to run log for ' + err.stack);
+			Logger.error('fail to run log for ' + err.stack);
 			return;
 		}
 		cb(null, res);
@@ -91,7 +91,7 @@ var fetchLogs = function(root, msg, callback) {
 			try{
 				json = JSON.parse(endOut[j]);
 			} catch(e) {
-				logger.error('the log cannot parsed to json, '+e);
+				Logger.error('the log cannot parsed to json, '+e);
 				continue;
 			}
 			map.time = json.time;

@@ -1,7 +1,7 @@
 "use strict"
 
 const _ = require("lodash")
-const DataManagerService = require("../dms/DataManagerService")
+const Dms = require("../dms/Dms")
 const Hades = GlobalHades
 
 class DataMgr {
@@ -9,36 +9,47 @@ class DataMgr {
     }
 
     init(){
-		DataManagerService.init()
+		Dms.init()
 		Hades.Event.on(Hades.Event.ON_UPDATE_PROPERTY, this.setEntityData)
+		Hades.Event.on(Hades.Event.ON_DELETE_PROPERTY, this.delEntityData)
+		Hades.Event.on(Hades.Event.ON_SAVE_PROPERTY, this.saveEntityData)		
     }
 
     async getEntityData(entityName, cond, data){
-        return await DataManagerService.loadData(entityName, cond, data)
+        // return await Dms.load(entityName, cond, data)
     }
 
-    async setEntityData(entityName, cond, data){
-		console.log("DMS setEntityData -> ", entityName, cond, data)
-        //return await DataManagerService.updateData(entityName, cond, data)
+    setEntityData(entity, path, value){
+		if (!entity._inited) return
+		if (Hades.isSimpleEntity(entity)){
+
+		}else{
+
+        }
+        return Dms.update(entity, path, value)
     }
 
-    async delEntityData(entityName, cond, data){
-        return await DataManagerService.deleteData(entityName, cond, data)
-    }
+    delEntityData(entity, path){
+        if (!entity._inited) return
+		if (Hades.isSimpleEntity(entity)){
 
-    async excuteRawQuery(query){
-        return await DataManagerService.rawQuery()
+		}else{
+			
+		}
+		return Dms.delete(entity, path)
+    }
+    
+    async saveEntityData(eid){
+		
+	}
+
+    async executeQuery(query){
+        // return await Dms.execQuery(query)
     }
 
     async doBeforeShutDown(){
-        await DataManagerService.syncDirtyData()
-        console.log('ResourceMgr - shut down dirty sync')
+        // await Dms.syncDirty()
     }
-
-    shutDownReady(){
-        DataManagerService.shutDownReady()
-	}
-
 }
 
 module.exports = new DataMgr()

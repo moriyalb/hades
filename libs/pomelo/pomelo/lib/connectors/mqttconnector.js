@@ -81,7 +81,7 @@ var composeResponse = function(msgId, route, msgBody) {
 var composePush = function(route, msgBody) {
   var msg = generate.publish(msgBody);
   if(!msg) {
-    logger.error('invalid mqtt publish message: %j', msgBody);
+    Logger.error('invalid mqtt publish message: %j', msgBody);
   }
 
   return msg;

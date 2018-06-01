@@ -35,7 +35,7 @@ function getPsInfo(param, callback) {
 			callback(err, null);
 			return;
 		} 
-    format(param, output, callback);
+    	format(param, output, callback);
 	});
 };
 

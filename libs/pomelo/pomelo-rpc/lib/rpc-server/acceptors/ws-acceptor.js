@@ -38,7 +38,7 @@ pro.listen = function(port) {
   this.server.set('log level', 0);
 
   this.server.server.on('error', function(err) {
-    logger.error('rpc server is error: %j', err.stack);
+    Logger.error('rpc server is error: %j', err.stack);
     self.emit('error', err);
   });
 
@@ -59,7 +59,7 @@ pro.listen = function(port) {
         }
       } catch (e) {
         // socke.io would broken if uncaugth the exception
-        logger.error('rpc server process message error: %j', e.stack);
+        Logger.error('rpc server process message error: %j', e.stack);
       }
     });
 
@@ -83,11 +83,11 @@ var ipFilter = function(obj) {
     var self = this;
     self.whitelist(function(err, tmpList) {
       if (err) {
-        logger.error('%j.(RPC whitelist).', err);
+        Logger.error('%j.(RPC whitelist).', err);
         return;
       }
       if (!Array.isArray(tmpList)) {
-        logger.error('%j is not an array.(RPC whitelist).', tmpList);
+        Logger.error('%j is not an array.(RPC whitelist).', tmpList);
         return;
       }
       if (!!obj && !!obj.ip && !!obj.id) {
@@ -100,7 +100,7 @@ var ipFilter = function(obj) {
         var sock = self.sockets[obj.id];
         if (sock) {
           sock.disconnect('unauthorized');
-          logger.warn('%s is rejected(RPC whitelist).', obj.ip);
+          Logger.warn('%s is rejected(RPC whitelist).', obj.ip);
         }
       }
     });
@@ -119,7 +119,7 @@ pro.close = function() {
   try {
     this.server.server.close();
   } catch (err) {
-    logger.error('rpc server close error: %j', err.stack);
+    Logger.error('rpc server close error: %j', err.stack);
   }
   this.emit('closed');
 };

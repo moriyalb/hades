@@ -1,3 +1,5 @@
+"use strict"
+
 let Protocol = exports
 
 const PKG_HEAD_BYTES = 4

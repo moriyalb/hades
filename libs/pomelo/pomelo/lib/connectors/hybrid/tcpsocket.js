@@ -76,7 +76,7 @@ Socket.prototype.close = function () {
 		try {
 			this._socket.destroy();
 		} catch (e) {
-			logger.error('socket close with destroy error: %j', e.stack);
+			Logger.error('socket close with destroy error: %j', e.stack);
 		}
 	}
 };
@@ -152,7 +152,7 @@ var readHead = function (socket, data, offset) {
 			socket.state = ST_BODY;
 		} else {
 			dend = data.length;
-			logger.error('close the connection with invalid head message, the remote ip is %s && port is %s && message is %j', socket._socket.remoteAddress, socket._socket.remotePort, data);
+			Logger.error('close the connection with invalid head message, the remote ip is %s && port is %s && message is %j', socket._socket.remoteAddress, socket._socket.remotePort, data);
 			socket.close();
 		}
 

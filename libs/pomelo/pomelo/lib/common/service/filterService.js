@@ -58,7 +58,7 @@ Service.prototype.beforeFilter = function(msg, session, cb) {
     } else if(typeof handler.before === 'function') {
       handler.before(msg, session, next);
     } else {
-      logger.error('meet invalid before filter, handler or handler.before should be function.');
+      Logger.error('meet invalid before filter, handler or handler.before should be function.');
       next(new Error('invalid before filter.'));
     }
   }; //end of next
@@ -92,7 +92,7 @@ Service.prototype.afterFilter = function(err, msg, session, resp, cb) {
     } else if(typeof handler.after === 'function') {
       handler.after(err, msg, session, resp, next);
     } else {
-      logger.error('meet invalid after filter, handler or handler.after should be function.');
+      Logger.error('meet invalid after filter, handler or handler.after should be function.');
       next(new Error('invalid after filter.'));
     }
   } //end of next

@@ -41,6 +41,8 @@ class HadesConfig {
 		this.serverCfg = this.__requireConfig(ServerCfg + "/Servers")
 		this.mysqlCfg = this.__requireConfig(ServerCfg + "/Mysql")
 		this.redisCfg = this.__requireConfig(ServerCfg + "/Redis")
+		this.platformCfg = this.__requireConfig(ServerCfg + "/Platform") //TODO
+		this.specialAccountCfg = this.__requireConfig(ServerCfg + "/SpecialAccount") //TODO
 
 		//schema configs
 		this.entitiesPath = R.always(SchemaEntitiesPath)
@@ -55,13 +57,15 @@ class HadesConfig {
 
 		//init from process arguments
 		this.__initEnv()
+
+		//save root
+		this.projectRoot = R.always(projectRoot)
 	}
 
 	__requireConfig(cfgPath){
 		let cfg
 		try{
-			if (!!require.cache[cfgPath])
-				delete require.cache[cfgPath]
+			delete require.cache[require.resolve(cfgPath)]
 			cfg = require(cfgPath)
 		}catch(e){
 			console.error("Invalid Hades Config Settings !", cfgPath, e)
@@ -103,7 +107,8 @@ class HadesConfig {
 	}
 
 	getEnvType(){
-		return this.env.split("_")[0]
+		let envName = this.env.split("_")[0]
+		return this.clusterCfg().Envs[envName]
 	}
 
 	matchEnv(env){
@@ -128,7 +133,7 @@ class HadesConfig {
 	}
 
 	matchServer(servers){
-		return _.indexOf(servers, this.serverType) >= 0
+		return servers.length == 0 || _.indexOf(servers, this.serverType) >= 0
 	}
 
 	getServerId() {
@@ -182,9 +187,14 @@ class HadesConfig {
 		return true 
 	}
 
-	isWholeArrayNeeded(){
-		return false//true
+	isLocalServer(){
+		return this.getGameNo() < 2000
 	}
+
+	getGameNo(){
+		return this.clusterCfg().GameNo
+	}
+
 }
 
 module.exports = new HadesConfig()

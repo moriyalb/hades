@@ -233,7 +233,7 @@ utils.checkPort = function (server, cb) {
 	var cmd1 = generateCommand(self, host, port);
 	var child = exec(cmd1, function (err, stdout, stderr) {
 		if (err) {
-			logger.error(`command ${cmd1} execute with error: ${err.stack}`);
+			Logger.error(`command ${cmd1} execute with error: ${err.stack}`);
 			self.invokeCallback(cb, 'error');
 		} else if (stdout.trim() !== '0') {
 			self.invokeCallback(cb, 'busy');
@@ -242,7 +242,7 @@ utils.checkPort = function (server, cb) {
 			var cmd2 = generateCommand(self, host, port);
 			exec(cmd2, function (err, stdout, stderr) {
 				if (err) {
-					logger.error(`command ${cmd2} execute with error: ${err.stack}`);
+					Logger.error(`command ${cmd2} execute with error: ${err.stack}`);
 					self.invokeCallback(cb, 'error');
 				} else if (stdout.trim() !== '0') {
 					self.invokeCallback(cb, 'busy');

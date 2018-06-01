@@ -33,7 +33,7 @@ var Switcher = function (server, opts) {
 	} else {
 		this.server.on('secureConnection', this.newSocket.bind(this));
 		this.server.on('clientError', function (e, tlsSo) {
-			logger.warn('an ssl error occured before handshake established: ', e);
+			Logger.warn('an ssl error occured before handshake established: ', e);
 			tlsSo.destroy();
 		});
 	}
@@ -53,7 +53,7 @@ Switcher.prototype.newSocket = function (socket) {
 	}
 
 	socket.setTimeout(this.timeout, function () {
-		logger.warn('connection is timeout without communication, the remote ip is %s && port is %s',
+		Logger.warn('connection is timeout without communication, the remote ip is %s && port is %s',
 			socket.remoteAddress, socket.remotePort);
 		socket.destroy();
 	});

@@ -114,9 +114,9 @@ module.exports.optComponents = function (comps, method, cb) {
 	}, function (err) {
 		if (err) {
 			if (typeof err === 'string') {
-				logger.error('fail to operate component, method: %s, err: %j', method, err);
+				Logger.error('fail to operate component, method: %s, err: %j', method, err);
 			} else {
-				logger.error('fail to operate component, method: %s, err: %j', method, err.stack);
+				Logger.error('fail to operate component, method: %s, err: %j', method, err.stack);
 			}
 		}
 		utils.invokeCallback(cb, err);
@@ -141,7 +141,7 @@ var loadServers = function (app) {
 			}
 			serverMap[server.id] = server;
 			if (server.wsPort) {
-				logger.warn('wsPort is deprecated, use clientPort in frontend server instead, server: %j', server);
+				Logger.warn('wsPort is deprecated, use clientPort in frontend server instead, server: %j', server);
 			}
 		}
 	}

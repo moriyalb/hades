@@ -154,7 +154,7 @@ ChannelService.prototype.broadcast = function (stype, pushMapId, msg, opts, cb) 
 	var genCB = function (serverId) {
 		return function (err) {
 			if (err) {
-				logger.error('[broadcast] fail to push message to serverId: ' + serverId + ', err:' + err.stack);
+				Logger.error('[broadcast] fail to push message to serverId: ' + serverId + ', err:' + err.stack);
 				latch.done();
 				return;
 			}
@@ -338,7 +338,7 @@ Channel.prototype.pushMessage = function (pushMapId, msg, opts, cb) {
  */
 var add = function (uid, sid, groups) {
 	if (!sid) {
-		logger.warn('ignore uid %j for sid not specified.', uid);
+		Logger.warn('ignore uid %j for sid not specified.', uid);
 		return false;
 	}
 
@@ -390,7 +390,7 @@ var sendMessageByGroup = function (channelService, pushMapId, msg, groups, opts,
 	var successFlag = false;
 	var failIds = [];
 
-	//logger.debug('[%s] channelService sendMessageByGroup pushMapId: %d, msg: %j, groups: %j, opts: %j', app.serverId, pushMapId, msg, groups, opts);
+	//Logger.debug('[%s] channelService sendMessageByGroup pushMapId: %d, msg: %j, groups: %j, opts: %j', app.serverId, pushMapId, msg, groups, opts);
 	if (count === 0) {
 		// group is empty
 		utils.invokeCallback(cb);
@@ -408,7 +408,7 @@ var sendMessageByGroup = function (channelService, pushMapId, msg, groups, opts,
 	var rpcCB = function (serverId) {
 		return function (err, fails) {
 			if (err) {
-				logger.error('[pushMessage] fail to dispatch msg to serverId: ' + serverId + ', err:' + err.stack);
+				Logger.error('[pushMessage] fail to dispatch msg to serverId: ' + serverId + ', err:' + err.stack);
 				latch.done();
 				return;
 			}
@@ -503,7 +503,7 @@ var addToStore = function (self, key, value) {
 	if (!!self.store) {
 		self.store.add(key, value, function (err) {
 			if (!!err) {
-				logger.error('add key: %s value: %s to store, with err: %j', key, value, err.stack);
+				Logger.error('add key: %s value: %s to store, with err: %j', key, value, err.stack);
 			}
 		});
 	}
@@ -513,7 +513,7 @@ var removeFromStore = function (self, key, value) {
 	if (!!self.store) {
 		self.store.remove(key, value, function (err) {
 			if (!!err) {
-				logger.error('remove key: %s value: %s from store, with err: %j', key, value, err.stack);
+				Logger.error('remove key: %s value: %s from store, with err: %j', key, value, err.stack);
 			}
 		});
 	}
@@ -523,7 +523,7 @@ var loadAllFromStore = function (self, key, cb) {
 	if (!!self.store) {
 		self.store.load(key, function (err, list) {
 			if (!!err) {
-				logger.error('load key: %s from store, with err: %j', key, err.stack);
+				Logger.error('load key: %s from store, with err: %j', key, err.stack);
 				utils.invokeCallback(cb, err);
 			} else {
 				utils.invokeCallback(cb, null, list);
@@ -536,7 +536,7 @@ var removeAllFromStore = function (self, key) {
 	if (!!self.store) {
 		self.store.removeAll(key, function (err) {
 			if (!!err) {
-				logger.error('remove key: %s all members from store, with err: %j', key, err.stack);
+				Logger.error('remove key: %s all members from store, with err: %j', key, err.stack);
 			}
 		});
 	}

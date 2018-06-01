@@ -67,7 +67,7 @@ Socket.prototype.sendRaw = function (msg) {
 		binary: true
 	}, function (err) {
 		if (!!err) {
-			logger.error('websocket send binary data failed: %j', err.stack);
+			Logger.error('websocket send binary data failed: %j', err.stack);
 			return;
 		}
 	});

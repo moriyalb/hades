@@ -49,12 +49,3 @@ Const.EntityType = {
 	Single : 1,
 	Simple : 2
 }
-
-Const.Hook = {
-	Handshake : Symbol(),
-	Heartbeat : Symbol(),
-	ReqMessage : Symbol(),
-	RespMessage : Symbol(),
-	RemoteMessage : Symbol(),
-	PushMessage : Symbol(),
-}

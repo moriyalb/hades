@@ -53,10 +53,10 @@ class HadesMessage{
 			let [ename, mname] = Methods.handlerIds[reqMapId]
 			let mdef = Methods.handler[mname]
 	
-			for (const [t,,,canNil] of mdef.req) {
+			for (const [t, argName, desc,canNil] of mdef.req) {
 				let v = decoder.read()
 				if (!Types.assertType(t, v, canNil)) {
-					console.error("Invalid Request Argments ", ename, mname, Types.getTypeDesc(t), v)
+					console.error("Invalid Request Argments ", ename, mname, argName, desc, Types.getTypeDesc(t), v)
 					return null
 				}
 				args.push(v)
@@ -66,7 +66,7 @@ class HadesMessage{
 			return null
 		}
 
-		Hades.Hook.hookCall(Hades.Const.Hook.ReqMessage, reqMapId, pid, args)
+		Hades.Event.emit(Hades.Event.HOOK_ON_REQ_MSG, reqMapId, pid, args)
 		return args
 	}
 
@@ -94,14 +94,15 @@ class HadesMessage{
 			let t = n[0]
 			let v = resp[n[1]]
 			if (Hades.Config.isDebugging()){
-				if (!Types.assertType(t, v, n[3])) {
+				//response can always be null or undefined.
+				if (!Types.assertType(t, v, true)) {
 				 	console.error("Invalid Response Argments ", ename, mname, Types.getTypeDesc(t), v)
 				}
 			}			
 			return v
 		})
 	
-		Hades.Hook.hookCall(Hades.Const.Hook.RespMessage, reqMapId, pid, resp)
+		Hades.Event.emit(Hades.Event.HOOK_ON_RESP_MSG, reqMapId, pid, resp)
 	
 		let totalLength = 0
 		let repbuffs = _.map(resp, (v) => {
@@ -117,7 +118,7 @@ class HadesMessage{
 		let [ename, mname] = Methods.pushIds[pushId]
 		let mdef = Methods.push[mname]
 		//mare sure result is good
-		if (!args){
+		if (mdef.req.length > 0 && _.isNil(args)){
 			console.error("Push args is null -> ", ename, mname, pid)
 			return
 		}
@@ -135,16 +136,21 @@ class HadesMessage{
 			return v
 		})
 
-		Hades.Hook.hookCall(Hades.Const.Hook.PushMessage, pushId, pid, args)
+		Hades.Event.emit(Hades.Event.HOOK_ON_PUSH_MSG, pushId, pid, args)
 	
-		let totalLength = 0
-		let repbuffs = _.map(args, (v) => {
-			let vb = MsgPack.encode(v)
-			totalLength += vb.length
-			return vb
-		})
-
-		return Buffer.concat(repbuffs, totalLength)
+		if (args.length > 0){
+			let totalLength = 0
+			let repbuffs = _.map(args, (v) => {
+				let vb = MsgPack.encode(v)
+				totalLength += vb.length
+				return vb
+			})
+	
+			return Buffer.concat(repbuffs, totalLength)
+		}else{
+			return Buffer.allocUnsafe(0)
+		}
+		
 	}
 }
 
